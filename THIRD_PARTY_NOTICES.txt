@@ -36,7 +36,7 @@ The dedication does not reach trademarks, patents, privacy or likeness rights of
 Software in the app
 ===================
 
-License text 1 of 351
+License text 1 of 352
 Used by:
 - @floating-ui/core 1.8.0 (npm, MIT) https://github.com/floating-ui/floating-ui
 - @floating-ui/dom 1.8.0 (npm, MIT) https://github.com/floating-ui/floating-ui
@@ -66,7 +66,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 2 of 351
+License text 2 of 352
 Used by:
 - @fontsource-variable/noto-sans-jp 5.3.0 (npm, OFL-1.1) https://github.com/fontsource/font-files
 
@@ -166,7 +166,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
-License text 3 of 351
+License text 3 of 352
 Used by:
 - @fontsource/anton 5.3.0 (npm, OFL-1.1) https://github.com/fontsource/font-files
 
@@ -266,7 +266,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
-License text 4 of 351
+License text 4 of 352
 Used by:
 - @fontsource/bangers 5.3.0 (npm, OFL-1.1) https://github.com/fontsource/font-files
 
@@ -366,7 +366,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
-License text 5 of 351
+License text 5 of 352
 Used by:
 - @fontsource/dela-gothic-one 5.3.0 (npm, OFL-1.1) https://github.com/fontsource/font-files
 
@@ -466,7 +466,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
-License text 6 of 351
+License text 6 of 352
 Used by:
 - @fontsource/dotgothic16 5.3.0 (npm, OFL-1.1) https://github.com/fontsource/font-files
 
@@ -566,7 +566,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
-License text 7 of 351
+License text 7 of 352
 Used by:
 - @fontsource/hachi-maru-pop 5.3.0 (npm, OFL-1.1) https://github.com/fontsource/font-files
 
@@ -666,7 +666,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
-License text 8 of 351
+License text 8 of 352
 Used by:
 - @fontsource/permanent-marker 5.3.0 (npm, Apache-2.0) https://github.com/fontsource/font-files
 
@@ -874,7 +874,7 @@ Used by:
    limitations under the License.
 
 
-License text 9 of 351
+License text 9 of 352
 Used by:
 - @fontsource/potta-one 5.3.0 (npm, OFL-1.1) https://github.com/fontsource/font-files
 
@@ -974,7 +974,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
-License text 10 of 351
+License text 10 of 352
 Used by:
 - @fontsource/rampart-one 5.3.0 (npm, OFL-1.1) https://github.com/fontsource/font-files
 
@@ -1074,7 +1074,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
-License text 11 of 351
+License text 11 of 352
 Used by:
 - @fontsource/reggae-one 5.3.0 (npm, OFL-1.1) https://github.com/fontsource/font-files
 
@@ -1174,7 +1174,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
-License text 12 of 351
+License text 12 of 352
 Used by:
 - @fontsource/rocknroll-one 5.3.0 (npm, OFL-1.1) https://github.com/fontsource/font-files
 
@@ -1274,7 +1274,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
-License text 13 of 351
+License text 13 of 352
 Used by:
 - @fontsource/shippori-mincho 5.3.0 (npm, OFL-1.1) https://github.com/fontsource/font-files
 
@@ -1374,7 +1374,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
-License text 14 of 351
+License text 14 of 352
 Used by:
 - @fontsource/zen-maru-gothic 5.3.0 (npm, OFL-1.1) https://github.com/fontsource/font-files
 
@@ -1474,7 +1474,7 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 
-License text 15 of 351
+License text 15 of 352
 Used by:
 - @phosphor-icons/react 2.1.10 (npm, MIT) https://github.com/phosphor-icons/react
 
@@ -1502,7 +1502,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 16 of 351
+License text 16 of 352
 Used by:
 - @radix-ui/number 1.1.3 (npm, MIT) https://github.com/radix-ui/primitives
 - @radix-ui/primitive 1.1.7 (npm, MIT) https://github.com/radix-ui/primitives
@@ -1565,7 +1565,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 17 of 351
+License text 17 of 352
 Used by:
 - @tanstack/react-virtual 3.14.13 (npm, MIT) https://github.com/TanStack/virtual
 - @tanstack/virtual-core 3.17.11 (npm, MIT) https://github.com/TanStack/virtual
@@ -1594,12 +1594,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 18 of 351
+License text 18 of 352
 Used by:
 - @tauri-apps/api 2.12.1 (npm, Apache-2.0 OR MIT) https://github.com/tauri-apps/tauri
 - anyhow 1.0.104 (crate, MIT OR Apache-2.0) https://github.com/dtolnay/anyhow
 - async-trait 0.1.92 (crate, MIT OR Apache-2.0) https://github.com/dtolnay/async-trait
 - const-hex 1.19.3 (crate, MIT OR Apache-2.0) https://github.com/danipopes/const-hex
+- constant_time_eq 0.6.1 (crate, CC0-1.0 OR MIT-0 OR Apache-2.0) https://codeberg.org/cesarb/constant_time_eq
 - dtoa 1.0.11 (crate, MIT OR Apache-2.0) https://github.com/dtolnay/dtoa
 - dyn-clone 1.0.20 (crate, MIT OR Apache-2.0) https://github.com/dtolnay/dyn-clone
 - erased-serde 0.4.10 (crate, MIT OR Apache-2.0) https://github.com/dtolnay/erased-serde
@@ -1839,7 +1840,7 @@ Used by:
    END OF TERMS AND CONDITIONS
 
 
-License text 19 of 351
+License text 19 of 352
 Used by:
 - @tauri-apps/api 2.12.1 (npm, Apache-2.0 OR MIT) https://github.com/tauri-apps/tauri
 - tauri 2.12.5 (crate, Apache-2.0 OR MIT) https://github.com/tauri-apps/tauri
@@ -1873,7 +1874,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 20 of 351
+License text 20 of 352
 Used by:
 - @tauri-apps/api 2.12.1 (npm, Apache-2.0 OR MIT) https://github.com/tauri-apps/tauri
 
@@ -1900,7 +1901,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/tauri.git
 Creator: Person: Daniel Thompson-Yvetot
 
 
-License text 21 of 351
+License text 21 of 352
 Used by:
 - @types/d3-color 3.1.3 (npm, MIT) https://github.com/DefinitelyTyped/DefinitelyTyped
 - @types/d3-drag 3.0.7 (npm, MIT) https://github.com/DefinitelyTyped/DefinitelyTyped
@@ -1948,7 +1949,7 @@ Used by:
     SOFTWARE
 
 
-License text 22 of 351
+License text 22 of 352
 Used by:
 - @xyflow/react 12.12.0 (npm, MIT) https://github.com/xyflow/xyflow
 - @xyflow/system 0.0.83 (npm, MIT) https://github.com/xyflow/xyflow
@@ -1977,7 +1978,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 23 of 351
+License text 23 of 352
 Used by:
 - abnf 0.13.0 (crate, MIT OR Apache-2.0) https://github.com/duesee/abnf
 - abnf-core 0.5.0 (crate, MIT OR Apache-2.0) https://github.com/duesee/abnf-core
@@ -2048,7 +2049,7 @@ Used by:
 - equivalent 1.0.2 (crate, Apache-2.0 OR MIT) https://github.com/indexmap-rs/equivalent
 - fastrand 2.5.0 (crate, Apache-2.0 OR MIT) https://github.com/smol-rs/fastrand
 - ff 0.14.0 (crate, MIT OR Apache-2.0) https://github.com/zkcrypto/ff
-- flate2 1.1.10 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/flate2-rs
+- flate2 1.1.11 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/flate2-rs
 - fnv 1.0.7 (crate, Apache-2.0 OR MIT) https://github.com/servo/rust-fnv
 - form_urlencoded 1.2.2 (crate, MIT OR Apache-2.0) https://github.com/servo/rust-url
 - gif 0.14.2 (crate, MIT OR Apache-2.0) https://github.com/image-rs/image-gif
@@ -2162,7 +2163,7 @@ Used by:
 - url 2.5.8 (crate, MIT OR Apache-2.0) https://github.com/servo/rust-url
 - utf8_iter 1.0.4 (crate, Apache-2.0 OR MIT) https://github.com/hsivonen/utf8_iter
 - utf8-decode 1.0.1 (crate, MIT OR Apache-2.0) https://github.com/timothee-haudebourg/utf8-decode
-- uuid 1.29.0 (crate, Apache-2.0 OR MIT) https://github.com/uuid-rs/uuid
+- uuid 1.29.1 (crate, Apache-2.0 OR MIT) https://github.com/uuid-rs/uuid
 - wasm-bindgen 0.2.129 (crate, MIT OR Apache-2.0) https://github.com/wasm-bindgen/wasm-bindgen
 - wasm-bindgen-macro 0.2.129 (crate, MIT OR Apache-2.0) https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/macro
 - wasm-bindgen-macro-support 0.2.129 (crate, MIT OR Apache-2.0) https://github.com/wasm-bindgen/wasm-bindgen/tree/main/crates/macro-support
@@ -2383,7 +2384,7 @@ Used by:
    limitations under the License.
 
 
-License text 24 of 351
+License text 24 of 352
 Used by:
 - abnf 0.13.0 (crate, MIT OR Apache-2.0) https://github.com/duesee/abnf
 - abnf-core 0.5.0 (crate, MIT OR Apache-2.0) https://github.com/duesee/abnf-core
@@ -2412,7 +2413,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 25 of 351
+License text 25 of 352
 Used by:
 - adler2 2.0.1 (crate, 0BSD OR MIT OR Apache-2.0) https://github.com/oyvindln/adler2
 
@@ -2431,7 +2432,7 @@ AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-License text 26 of 351
+License text 26 of 352
 Used by:
 - adler2 2.0.1 (crate, 0BSD OR MIT OR Apache-2.0) https://github.com/oyvindln/adler2
 - cargo-platform 0.1.9 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/cargo
@@ -2641,7 +2642,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 27 of 351
+License text 27 of 352
 Used by:
 - adler2 2.0.1 (crate, 0BSD OR MIT OR Apache-2.0) https://github.com/oyvindln/adler2
 - anyhow 1.0.104 (crate, MIT OR Apache-2.0) https://github.com/dtolnay/anyhow
@@ -2736,7 +2737,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 28 of 351
+License text 28 of 352
 Used by:
 - aho-corasick 1.1.5 (crate, Unlicense OR MIT) https://github.com/BurntSushi/aho-corasick
 - byteorder 1.5.0 (crate, Unlicense OR MIT) https://github.com/BurntSushi/byteorder
@@ -2755,7 +2756,7 @@ This project is dual-licensed under the Unlicense and MIT licenses.
 You may use this code under the terms of either license.
 
 
-License text 29 of 351
+License text 29 of 352
 Used by:
 - aho-corasick 1.1.5 (crate, Unlicense OR MIT) https://github.com/BurntSushi/aho-corasick
 - byteorder 1.5.0 (crate, Unlicense OR MIT) https://github.com/BurntSushi/byteorder
@@ -2791,7 +2792,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 30 of 351
+License text 30 of 352
 Used by:
 - aligned 0.4.3 (crate, MIT OR Apache-2.0) https://github.com/rust-embedded-community/aligned
 
@@ -2823,7 +2824,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 31 of 351
+License text 31 of 352
 Used by:
 - aligned-vec 0.6.4 (crate, MIT) https://github.com/sarah-ek/aligned-vec/
 - reborrow 0.5.5 (crate, MIT) https://github.com/sarah-ek/reborrow/
@@ -2852,7 +2853,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 32 of 351
+License text 32 of 352
 Used by:
 - alloc-no-stdlib 2.0.4 (crate, BSD-3-Clause) https://github.com/dropbox/rust-alloc-no-stdlib
 - alloc-no-stdlib 3.0.0 (crate, BSD-3-Clause) https://github.com/dropbox/rust-alloc-no-stdlib
@@ -2878,7 +2879,7 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 33 of 351
+License text 33 of 352
 Used by:
 - arg_enum_proc_macro 0.3.4 (crate, MIT) https://github.com/lu-zero/arg_enum_proc_macro
 
@@ -2906,7 +2907,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 34 of 351
+License text 34 of 352
 Used by:
 - aria-hidden 1.2.6 (npm, MIT) https://github.com/theKashey/aria-hidden
 - react-remove-scroll 2.7.2 (npm, MIT) https://github.com/theKashey/react-remove-scroll
@@ -2938,7 +2939,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 35 of 351
+License text 35 of 352
 Used by:
 - arrayvec 0.7.8 (crate, MIT OR Apache-2.0) https://github.com/bluss/arrayvec
 
@@ -2970,7 +2971,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 36 of 351
+License text 36 of 352
 Used by:
 - as-slice 0.2.1 (crate, MIT OR Apache-2.0) https://github.com/japaric/as-slice
 
@@ -3002,7 +3003,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 37 of 351
+License text 37 of 352
 Used by:
 - asn1-rs 0.7.2 (crate, MIT OR Apache-2.0) https://github.com/rusticata/asn1-rs
 - asn1-rs-derive 0.6.0 (crate, MIT OR Apache-2.0) https://github.com/rusticata/asn1-rs
@@ -3040,7 +3041,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 38 of 351
+License text 38 of 352
 Used by:
 - async-compression 0.4.50 (crate, MIT OR Apache-2.0) https://github.com/Nullus157/async-compression
 - compression-codecs 0.4.45 (crate, MIT OR Apache-2.0) https://github.com/Nullus157/async-compression
@@ -3070,7 +3071,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 39 of 351
+License text 39 of 352
 Used by:
 - async-generic 1.1.2 (crate, MIT OR Apache-2.0) https://github.com/scouten/async-generic
 
@@ -3278,7 +3279,7 @@ Used by:
    limitations under the License.
 
 
-License text 40 of 351
+License text 40 of 352
 Used by:
 - async-generic 1.1.2 (crate, MIT OR Apache-2.0) https://github.com/scouten/async-generic
 
@@ -3306,7 +3307,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 41 of 351
+License text 41 of 352
 Used by:
 - atomic-waker 1.1.2 (crate, Apache-2.0 OR MIT) https://github.com/smol-rs/atomic-waker
 
@@ -3358,7 +3359,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 42 of 351
+License text 42 of 352
 Used by:
 - atree 0.5.4 (crate, MIT) https://github.com/macthecadillac/atree
 
@@ -3386,7 +3387,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 43 of 351
+License text 43 of 352
 Used by:
 - av-scenechange 0.14.1 (crate, MIT) https://github.com/rust-av/av-scenechange
 
@@ -3414,7 +3415,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 44 of 351
+License text 44 of 352
 Used by:
 - av1-grain 0.2.5 (crate, BSD-2-Clause) https://github.com/rust-av/av1-grain
 
@@ -3446,7 +3447,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 45 of 351
+License text 45 of 352
 Used by:
 - avif-serialize 0.8.9 (crate, BSD-3-Clause) https://github.com/kornelski/avif-serialize
 
@@ -3482,7 +3483,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 46 of 351
+License text 46 of 352
 Used by:
 - axum 0.8.9 (crate, MIT) https://github.com/tokio-rs/axum
 
@@ -3514,7 +3515,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 47 of 351
+License text 47 of 352
 Used by:
 - axum-core 0.5.6 (crate, MIT) https://github.com/tokio-rs/axum
 
@@ -3548,7 +3549,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 48 of 351
+License text 48 of 352
 Used by:
 - base16ct 1.0.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/formats
 
@@ -3581,7 +3582,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 49 of 351
+License text 49 of 352
 Used by:
 - base64 0.22.1 (crate, MIT OR Apache-2.0) https://github.com/marshallpierce/rust-base64
 
@@ -3609,7 +3610,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 50 of 351
+License text 50 of 352
 Used by:
 - base64 0.23.1 (crate, MIT OR Apache-2.0) https://github.com/marshallpierce/rust-base64
 
@@ -3637,7 +3638,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 51 of 351
+License text 51 of 352
 Used by:
 - base64ct 1.8.3 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/formats
 
@@ -3670,7 +3671,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 52 of 351
+License text 52 of 352
 Used by:
 - bcder 0.7.7 (crate, BSD-3-Clause) https://github.com/nlnetlabs/bcder
 
@@ -3707,7 +3708,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 53 of 351
+License text 53 of 352
 Used by:
 - bit_field 0.10.3 (crate, Apache-2.0 OR MIT) https://github.com/phil-opp/rust-bit-field
 - crc32fast 1.5.4 (crate, MIT OR Apache-2.0) https://github.com/srijs/rust-crc32fast
@@ -3933,7 +3934,7 @@ Used by:
    limitations under the License.
 
 
-License text 54 of 351
+License text 54 of 352
 Used by:
 - bit_field 0.10.3 (crate, Apache-2.0 OR MIT) https://github.com/phil-opp/rust-bit-field
 
@@ -3961,7 +3962,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 55 of 351
+License text 55 of 352
 Used by:
 - bit-set 0.11.1 (crate, Apache-2.0 OR MIT) https://github.com/contain-rs/bit-vec
 - bit-set 0.8.0 (crate, Apache-2.0 OR MIT) https://github.com/contain-rs/bit-set
@@ -3997,7 +3998,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 56 of 351
+License text 56 of 352
 Used by:
 - bitflags 1.3.2 (crate, MIT OR Apache-2.0) https://github.com/bitflags/bitflags
 - bitflags 2.13.2 (crate, MIT OR Apache-2.0) https://github.com/bitflags/bitflags
@@ -4043,7 +4044,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 57 of 351
+License text 57 of 352
 Used by:
 - bitstream-io 4.10.0 (crate, MIT OR Apache-2.0) https://github.com/tuffy/bitstream-io
 
@@ -4075,7 +4076,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 58 of 351
+License text 58 of 352
 Used by:
 - bitvec 1.1.1 (crate, MIT) https://github.com/bitvecto-rs/bitvec
 - wyz 0.5.1 (crate, MIT) https://github.com/myrrlyn/wyz
@@ -4104,7 +4105,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 59 of 351
+License text 59 of 352
 Used by:
 - block-buffer 0.10.4 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/utils
 
@@ -4136,7 +4137,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 60 of 351
+License text 60 of 352
 Used by:
 - block-buffer 0.12.1 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/utils
 
@@ -4168,7 +4169,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 61 of 351
+License text 61 of 352
 Used by:
 - borsh 1.8.1 (crate, MIT OR Apache-2.0) https://github.com/near/borsh-rs
 - borsh-derive 1.8.1 (crate, Apache-2.0) https://github.com/near/borsh-rs
@@ -4377,7 +4378,7 @@ Used by:
    limitations under the License.
 
 
-License text 62 of 351
+License text 62 of 352
 Used by:
 - brotli 7.0.0 (crate, BSD-3-Clause AND MIT) https://github.com/dropbox/rust-brotli
 - brotli 9.0.0 (crate, BSD-3-Clause AND MIT) https://github.com/dropbox/rust-brotli
@@ -4404,7 +4405,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 63 of 351
+License text 63 of 352
 Used by:
 - bs58 0.5.1 (crate, MIT OR Apache-2.0) https://github.com/Nullus157/bs58-rs
 
@@ -4431,7 +4432,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 64 of 351
+License text 64 of 352
 Used by:
 - bumpalo 3.20.3 (crate, MIT OR Apache-2.0) https://github.com/fitzgen/bumpalo
 
@@ -4463,7 +4464,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 65 of 351
+License text 65 of 352
 Used by:
 - bytemuck 1.25.2 (crate, Zlib OR Apache-2.0 OR MIT) https://github.com/Lokathor/bytemuck
 
@@ -4479,7 +4480,7 @@ The above copyright notice and this permission notice (including the next paragr
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 66 of 351
+License text 66 of 352
 Used by:
 - bytemuck 1.25.2 (crate, Zlib OR Apache-2.0 OR MIT) https://github.com/Lokathor/bytemuck
 - tinyvec 1.13.3 (crate, Zlib OR Apache-2.0 OR MIT) https://github.com/Lokathor/tinyvec
@@ -4498,7 +4499,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 
 
-License text 67 of 351
+License text 67 of 352
 Used by:
 - byteordered 0.6.0 (crate, MIT OR Apache-2.0) https://github.com/Enet4/byteordered
 
@@ -4530,7 +4531,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 68 of 351
+License text 68 of 352
 Used by:
 - bytes 1.12.1 (crate, MIT) https://github.com/tokio-rs/bytes
 
@@ -4562,7 +4563,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 69 of 351
+License text 69 of 352
 Used by:
 - c2pa 0.91.11 (crate, MIT OR Apache-2.0) https://github.com/contentauth/c2pa-rs (the package ships no license file; the text is from its repository)
 
@@ -4590,7 +4591,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 70 of 351
+License text 70 of 352
 Used by:
 - c2pa_cbor 0.78.0 (crate, MIT OR Apache-2.0) https://github.com/contentauth/c2pa-cbor
 - c2pa_raw_crypto 0.3.0 (crate, MIT OR Apache-2.0) https://github.com/contentauth/c2pa_raw_crypto
@@ -4799,7 +4800,7 @@ Used by:
    limitations under the License.
 
 
-License text 71 of 351
+License text 71 of 352
 Used by:
 - c2pa_cbor 0.78.0 (crate, MIT OR Apache-2.0) https://github.com/contentauth/c2pa-cbor
 - c2pa_raw_crypto 0.3.0 (crate, MIT OR Apache-2.0) https://github.com/contentauth/c2pa_raw_crypto
@@ -4828,7 +4829,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 72 of 351
+License text 72 of 352
 Used by:
 - cfb 0.14.0 (crate, MIT) https://github.com/mdsteele/rust-cfb
 
@@ -4856,7 +4857,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 73 of 351
+License text 73 of 352
 Used by:
 - cfg-if 1.0.5 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/cfg-if
 - socket2 0.6.5 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/socket2
@@ -4893,7 +4894,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 74 of 351
+License text 74 of 352
 Used by:
 - chacha20 0.10.2 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/stream-ciphers
 - zeroize_derive 1.5.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/utils
@@ -4926,7 +4927,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 75 of 351
+License text 75 of 352
 Used by:
 - chrono 0.4.45 (crate, MIT OR Apache-2.0) https://github.com/chronotope/chrono
 
@@ -5172,7 +5173,7 @@ limitations under the License.
 ~~~~
 
 
-License text 76 of 351
+License text 76 of 352
 Used by:
 - classcat 5.0.5 (npm, MIT) https://github.com/jorgebucaran/classcat
 
@@ -5186,7 +5187,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 77 of 351
+License text 77 of 352
 Used by:
 - cmov 0.5.4 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/utils
 - hybrid-array 0.4.15 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/hybrid-array
@@ -5219,7 +5220,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 78 of 351
+License text 78 of 352
 Used by:
 - color_quant 1.1.0 (crate, MIT) https://github.com/image-rs/color_quant
 
@@ -5247,7 +5248,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 79 of 351
+License text 79 of 352
 Used by:
 - const-oid 0.10.2 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/formats
 - cpufeatures 0.3.1 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/utils
@@ -5282,7 +5283,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 80 of 351
+License text 80 of 352
 Used by:
 - const-oid 0.9.6 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/formats/tree/master/const-oid
 
@@ -5314,7 +5315,158 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 81 of 351
+License text 81 of 352
+Used by:
+- constant_time_eq 0.6.1 (crate, CC0-1.0 OR MIT-0 OR Apache-2.0) https://codeberg.org/cesarb/constant_time_eq
+- dunce 1.0.5 (crate, CC0-1.0 OR MIT-0 OR Apache-2.0) https://gitlab.com/kornelski/dunce
+- imgref 1.12.3 (crate, CC0-1.0 OR Apache-2.0) https://github.com/kornelski/imgref
+
+----------------------------------------------------------------------
+Creative Commons Legal Code
+
+CC0 1.0 Universal
+
+    CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE
+    LEGAL SERVICES. DISTRIBUTION OF THIS DOCUMENT DOES NOT CREATE AN
+    ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS
+    INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES
+    REGARDING THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS
+    PROVIDED HEREUNDER, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM
+    THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS PROVIDED
+    HEREUNDER.
+
+Statement of Purpose
+
+The laws of most jurisdictions throughout the world automatically confer
+exclusive Copyright and Related Rights (defined below) upon the creator
+and subsequent owner(s) (each and all, an "owner") of an original work of
+authorship and/or a database (each, a "Work").
+
+Certain owners wish to permanently relinquish those rights to a Work for
+the purpose of contributing to a commons of creative, cultural and
+scientific works ("Commons") that the public can reliably and without fear
+of later claims of infringement build upon, modify, incorporate in other
+works, reuse and redistribute as freely as possible in any form whatsoever
+and for any purposes, including without limitation commercial purposes.
+These owners may contribute to the Commons to promote the ideal of a free
+culture and the further production of creative, cultural and scientific
+works, or to gain reputation or greater distribution for their Work in
+part through the use and efforts of others.
+
+For these and/or other purposes and motivations, and without any
+expectation of additional consideration or compensation, the person
+associating CC0 with a Work (the "Affirmer"), to the extent that he or she
+is an owner of Copyright and Related Rights in the Work, voluntarily
+elects to apply CC0 to the Work and publicly distribute the Work under its
+terms, with knowledge of his or her Copyright and Related Rights in the
+Work and the meaning and intended legal effect of CC0 on those rights.
+
+1. Copyright and Related Rights. A Work made available under CC0 may be
+protected by copyright and related or neighboring rights ("Copyright and
+Related Rights"). Copyright and Related Rights include, but are not
+limited to, the following:
+
+  i. the right to reproduce, adapt, distribute, perform, display,
+     communicate, and translate a Work;
+ ii. moral rights retained by the original author(s) and/or performer(s);
+iii. publicity and privacy rights pertaining to a person's image or
+     likeness depicted in a Work;
+ iv. rights protecting against unfair competition in regards to a Work,
+     subject to the limitations in paragraph 4(a), below;
+  v. rights protecting the extraction, dissemination, use and reuse of data
+     in a Work;
+ vi. database rights (such as those arising under Directive 96/9/EC of the
+     European Parliament and of the Council of 11 March 1996 on the legal
+     protection of databases, and under any national implementation
+     thereof, including any amended or successor version of such
+     directive); and
+vii. other similar, equivalent or corresponding rights throughout the
+     world based on applicable law or treaty, and any national
+     implementations thereof.
+
+2. Waiver. To the greatest extent permitted by, but not in contravention
+of, applicable law, Affirmer hereby overtly, fully, permanently,
+irrevocably and unconditionally waives, abandons, and surrenders all of
+Affirmer's Copyright and Related Rights and associated claims and causes
+of action, whether now known or unknown (including existing as well as
+future claims and causes of action), in the Work (i) in all territories
+worldwide, (ii) for the maximum duration provided by applicable law or
+treaty (including future time extensions), (iii) in any current or future
+medium and for any number of copies, and (iv) for any purpose whatsoever,
+including without limitation commercial, advertising or promotional
+purposes (the "Waiver"). Affirmer makes the Waiver for the benefit of each
+member of the public at large and to the detriment of Affirmer's heirs and
+successors, fully intending that such Waiver shall not be subject to
+revocation, rescission, cancellation, termination, or any other legal or
+equitable action to disrupt the quiet enjoyment of the Work by the public
+as contemplated by Affirmer's express Statement of Purpose.
+
+3. Public License Fallback. Should any part of the Waiver for any reason
+be judged legally invalid or ineffective under applicable law, then the
+Waiver shall be preserved to the maximum extent permitted taking into
+account Affirmer's express Statement of Purpose. In addition, to the
+extent the Waiver is so judged Affirmer hereby grants to each affected
+person a royalty-free, non transferable, non sublicensable, non exclusive,
+irrevocable and unconditional license to exercise Affirmer's Copyright and
+Related Rights in the Work (i) in all territories worldwide, (ii) for the
+maximum duration provided by applicable law or treaty (including future
+time extensions), (iii) in any current or future medium and for any number
+of copies, and (iv) for any purpose whatsoever, including without
+limitation commercial, advertising or promotional purposes (the
+"License"). The License shall be deemed effective as of the date CC0 was
+applied by Affirmer to the Work. Should any part of the License for any
+reason be judged legally invalid or ineffective under applicable law, such
+partial invalidity or ineffectiveness shall not invalidate the remainder
+of the License, and in such case Affirmer hereby affirms that he or she
+will not (i) exercise any of his or her remaining Copyright and Related
+Rights in the Work or (ii) assert any associated claims and causes of
+action with respect to the Work, in either case contrary to Affirmer's
+express Statement of Purpose.
+
+4. Limitations and Disclaimers.
+
+ a. No trademark or patent rights held by Affirmer are waived, abandoned,
+    surrendered, licensed or otherwise affected by this document.
+ b. Affirmer offers the Work as-is and makes no representations or
+    warranties of any kind concerning the Work, express, implied,
+    statutory or otherwise, including without limitation warranties of
+    title, merchantability, fitness for a particular purpose, non
+    infringement, or the absence of latent or other defects, accuracy, or
+    the present or absence of errors, whether or not discoverable, all to
+    the greatest extent permissible under applicable law.
+ c. Affirmer disclaims responsibility for clearing rights of other persons
+    that may apply to the Work or any use thereof, including without
+    limitation any person's Copyright and Related Rights in the Work.
+    Further, Affirmer disclaims responsibility for obtaining any necessary
+    consents, permissions or other rights required for any use of the
+    Work.
+ d. Affirmer understands and acknowledges that Creative Commons is not a
+    party to this document and has no duty or obligation with respect to
+    this CC0 or use of the Work.
+
+
+License text 82 of 352
+Used by:
+- constant_time_eq 0.6.1 (crate, CC0-1.0 OR MIT-0 OR Apache-2.0) https://codeberg.org/cesarb/constant_time_eq
+
+----------------------------------------------------------------------
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+License text 83 of 352
 Used by:
 - cookie 0.18.2 (crate, MIT OR Apache-2.0) https://github.com/SergioBenitez/cookie-rs
 
@@ -5523,7 +5675,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 82 of 351
+License text 84 of 352
 Used by:
 - cookie 0.18.2 (crate, MIT OR Apache-2.0) https://github.com/SergioBenitez/cookie-rs
 
@@ -5556,7 +5708,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 83 of 351
+License text 85 of 352
 Used by:
 - core_detect 1.0.0 (crate, MIT OR Apache-2.0) https://github.com/thomcc/core_detect
 
@@ -5588,7 +5740,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 84 of 351
+License text 86 of 352
 Used by:
 - cpubits 0.1.1 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/utils
 
@@ -5620,7 +5772,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 85 of 351
+License text 87 of 352
 Used by:
 - cpufeatures 0.2.17 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/utils
 
@@ -5652,7 +5804,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 86 of 351
+License text 88 of 352
 Used by:
 - crc32fast 1.5.4 (crate, MIT OR Apache-2.0) https://github.com/srijs/rust-crc32fast
 
@@ -5680,7 +5832,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 87 of 351
+License text 89 of 352
 Used by:
 - crossbeam-channel 0.5.17 (crate, MIT OR Apache-2.0) https://github.com/crossbeam-rs/crossbeam
 - crossbeam-deque 0.8.8 (crate, MIT OR Apache-2.0) https://github.com/crossbeam-rs/crossbeam
@@ -5717,7 +5869,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 88 of 351
+License text 90 of 352
 Used by:
 - crossbeam-channel 0.5.17 (crate, MIT OR Apache-2.0) https://github.com/crossbeam-rs/crossbeam
 
@@ -6317,7 +6469,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 89 of 351
+License text 91 of 352
 Used by:
 - crypto-bigint 0.7.10 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/crypto-bigint
 - sec1 0.8.1 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/formats
@@ -6351,7 +6503,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 90 of 351
+License text 92 of 352
 Used by:
 - crypto-common 0.1.7 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/traits
 
@@ -6383,7 +6535,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 91 of 351
+License text 93 of 352
 Used by:
 - crypto-common 0.2.2 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/traits
 
@@ -6415,7 +6567,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 92 of 351
+License text 94 of 352
 Used by:
 - cssparser 0.37.0 (crate, MPL-2.0) https://github.com/servo/rust-cssparser
 - cssparser-macros 0.7.1 (crate, MPL-2.0) https://github.com/servo/rust-cssparser
@@ -6797,7 +6949,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
   defined by the Mozilla Public License, v. 2.0.
 
 
-License text 93 of 351
+License text 95 of 352
 Used by:
 - csstype 3.2.3 (npm, MIT) https://github.com/frenic/csstype
 
@@ -6823,7 +6975,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 94 of 351
+License text 96 of 352
 Used by:
 - ctutils 0.4.8 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/utils
 
@@ -6855,7 +7007,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 95 of 351
+License text 97 of 352
 Used by:
 - curve25519-dalek 4.1.3 (crate, BSD-3-Clause) https://github.com/dalek-cryptography/curve25519-dalek/tree/main/curve25519-dalek
 
@@ -6927,7 +7079,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 96 of 351
+License text 98 of 352
 Used by:
 - curve25519-dalek 5.0.0 (crate, BSD-3-Clause) https://github.com/dalek-cryptography/curve25519-dalek/tree/main/curve25519-dalek
 
@@ -6963,7 +7115,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 97 of 351
+License text 99 of 352
 Used by:
 - d3-color 3.1.0 (npm, ISC) https://github.com/d3/d3-color
 
@@ -6983,7 +7135,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 THIS SOFTWARE.
 
 
-License text 98 of 351
+License text 100 of 352
 Used by:
 - d3-dispatch 3.0.1 (npm, ISC) https://github.com/d3/d3-dispatch
 - d3-drag 3.0.0 (npm, ISC) https://github.com/d3/d3-drag
@@ -7009,7 +7161,7 @@ TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 THIS SOFTWARE.
 
 
-License text 99 of 351
+License text 101 of 352
 Used by:
 - d3-ease 3.0.1 (npm, BSD-3-Clause) https://github.com/d3/d3-ease
 
@@ -7044,7 +7196,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 100 of 351
+License text 102 of 352
 Used by:
 - darling 0.24.1 (crate, MIT) https://github.com/TedDriggs/darling
 - darling_core 0.24.1 (crate, MIT) https://github.com/TedDriggs/darling
@@ -7074,7 +7226,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 101 of 351
+License text 103 of 352
 Used by:
 - data-encoding 2.11.1 (crate, MIT) https://github.com/ia0/data-encoding
 
@@ -7103,7 +7255,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 102 of 351
+License text 104 of 352
 Used by:
 - defmt 1.1.1 (crate, MIT OR Apache-2.0) https://github.com/knurling-rs/defmt
 - defmt-macros 1.1.1 (crate, MIT OR Apache-2.0) https://github.com/knurling-rs/defmt
@@ -7136,7 +7288,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 103 of 351
+License text 105 of 352
 Used by:
 - defmt-parser 1.0.0 (crate, MIT OR Apache-2.0) https://github.com/knurling-rs/defmt (the package ships no license file; the text is from its repository)
 
@@ -7375,7 +7527,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 104 of 351
+License text 106 of 352
 Used by:
 - delegate 0.8.0 (crate, MIT OR Apache-2.0) https://github.com/kobzol/rust-delegate (the package ships no license file; the text is from its repository)
 
@@ -7407,7 +7559,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 105 of 351
+License text 107 of 352
 Used by:
 - der 0.7.10 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/formats/tree/master/der
 - pkcs8 0.10.2 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/formats/tree/master/pkcs8
@@ -7440,7 +7592,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 106 of 351
+License text 108 of 352
 Used by:
 - deranged 0.5.8 (crate, MIT OR Apache-2.0) https://github.com/jhpratt/deranged
 
@@ -7649,7 +7801,7 @@ Used by:
    limitations under the License.
 
 
-License text 107 of 351
+License text 109 of 352
 Used by:
 - deranged 0.5.8 (crate, MIT OR Apache-2.0) https://github.com/jhpratt/deranged
 
@@ -7675,7 +7827,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 108 of 351
+License text 110 of 352
 Used by:
 - derive_more 2.1.1 (crate, MIT) https://github.com/JelteF/derive_more
 - derive_more-impl 2.1.1 (crate, MIT) https://github.com/JelteF/derive_more
@@ -7704,7 +7856,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 109 of 351
+License text 111 of 352
 Used by:
 - detect-node-es 1.1.0 (npm, MIT) https://github.com/thekashey/detect-node
 
@@ -7732,7 +7884,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 110 of 351
+License text 112 of 352
 Used by:
 - digest 0.10.7 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/traits
 - hmac 0.13.0 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/MACs
@@ -7765,7 +7917,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 111 of 351
+License text 113 of 352
 Used by:
 - digest 0.11.3 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/traits
 
@@ -7798,7 +7950,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 112 of 351
+License text 114 of 352
 Used by:
 - dirs 7.0.0 (crate, MIT OR Apache-2.0) https://codeberg.org/dirs/dirs-rs
 - dirs-sys 0.5.0 (crate, MIT OR Apache-2.0) https://github.com/dirs-dev/dirs-sys-rs
@@ -7980,7 +8132,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
    of your accepting any such warranty or additional liability.
 
 
-License text 113 of 351
+License text 115 of 352
 Used by:
 - dirs 7.0.0 (crate, MIT OR Apache-2.0) https://codeberg.org/dirs/dirs-rs
 - dirs-sys 0.5.0 (crate, MIT OR Apache-2.0) https://github.com/dirs-dev/dirs-sys-rs
@@ -8007,7 +8159,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 114 of 351
+License text 116 of 352
 Used by:
 - document-features 0.2.12 (crate, MIT OR Apache-2.0) https://github.com/slint-ui/document-features
 
@@ -8033,7 +8185,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 115 of 351
+License text 117 of 352
 Used by:
 - dom_query 0.28.0 (crate, MIT) https://github.com/niklak/dom_query
 
@@ -8067,7 +8219,7 @@ derived from the "nipper" project (https://github.com/importcjj/nipper),
 developed by Chen Jiaju, licensed under the MIT License and the Apache License 2.0 (dual licensed).
 
 
-License text 116 of 351
+License text 118 of 352
 Used by:
 - dpi 0.1.2 (crate, Apache-2.0 AND MIT) https://github.com/rust-windowing/winit
 
@@ -8125,136 +8277,7 @@ have been licensed under extremely permissive terms.
 ------------------------------------------------------------------------------
 
 
-License text 117 of 351
-Used by:
-- dunce 1.0.5 (crate, CC0-1.0 OR MIT-0 OR Apache-2.0) https://gitlab.com/kornelski/dunce
-- imgref 1.12.3 (crate, CC0-1.0 OR Apache-2.0) https://github.com/kornelski/imgref
-
-----------------------------------------------------------------------
-Creative Commons Legal Code
-
-CC0 1.0 Universal
-
-    CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE
-    LEGAL SERVICES. DISTRIBUTION OF THIS DOCUMENT DOES NOT CREATE AN
-    ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS
-    INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES
-    REGARDING THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS
-    PROVIDED HEREUNDER, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM
-    THE USE OF THIS DOCUMENT OR THE INFORMATION OR WORKS PROVIDED
-    HEREUNDER.
-
-Statement of Purpose
-
-The laws of most jurisdictions throughout the world automatically confer
-exclusive Copyright and Related Rights (defined below) upon the creator
-and subsequent owner(s) (each and all, an "owner") of an original work of
-authorship and/or a database (each, a "Work").
-
-Certain owners wish to permanently relinquish those rights to a Work for
-the purpose of contributing to a commons of creative, cultural and
-scientific works ("Commons") that the public can reliably and without fear
-of later claims of infringement build upon, modify, incorporate in other
-works, reuse and redistribute as freely as possible in any form whatsoever
-and for any purposes, including without limitation commercial purposes.
-These owners may contribute to the Commons to promote the ideal of a free
-culture and the further production of creative, cultural and scientific
-works, or to gain reputation or greater distribution for their Work in
-part through the use and efforts of others.
-
-For these and/or other purposes and motivations, and without any
-expectation of additional consideration or compensation, the person
-associating CC0 with a Work (the "Affirmer"), to the extent that he or she
-is an owner of Copyright and Related Rights in the Work, voluntarily
-elects to apply CC0 to the Work and publicly distribute the Work under its
-terms, with knowledge of his or her Copyright and Related Rights in the
-Work and the meaning and intended legal effect of CC0 on those rights.
-
-1. Copyright and Related Rights. A Work made available under CC0 may be
-protected by copyright and related or neighboring rights ("Copyright and
-Related Rights"). Copyright and Related Rights include, but are not
-limited to, the following:
-
-  i. the right to reproduce, adapt, distribute, perform, display,
-     communicate, and translate a Work;
- ii. moral rights retained by the original author(s) and/or performer(s);
-iii. publicity and privacy rights pertaining to a person's image or
-     likeness depicted in a Work;
- iv. rights protecting against unfair competition in regards to a Work,
-     subject to the limitations in paragraph 4(a), below;
-  v. rights protecting the extraction, dissemination, use and reuse of data
-     in a Work;
- vi. database rights (such as those arising under Directive 96/9/EC of the
-     European Parliament and of the Council of 11 March 1996 on the legal
-     protection of databases, and under any national implementation
-     thereof, including any amended or successor version of such
-     directive); and
-vii. other similar, equivalent or corresponding rights throughout the
-     world based on applicable law or treaty, and any national
-     implementations thereof.
-
-2. Waiver. To the greatest extent permitted by, but not in contravention
-of, applicable law, Affirmer hereby overtly, fully, permanently,
-irrevocably and unconditionally waives, abandons, and surrenders all of
-Affirmer's Copyright and Related Rights and associated claims and causes
-of action, whether now known or unknown (including existing as well as
-future claims and causes of action), in the Work (i) in all territories
-worldwide, (ii) for the maximum duration provided by applicable law or
-treaty (including future time extensions), (iii) in any current or future
-medium and for any number of copies, and (iv) for any purpose whatsoever,
-including without limitation commercial, advertising or promotional
-purposes (the "Waiver"). Affirmer makes the Waiver for the benefit of each
-member of the public at large and to the detriment of Affirmer's heirs and
-successors, fully intending that such Waiver shall not be subject to
-revocation, rescission, cancellation, termination, or any other legal or
-equitable action to disrupt the quiet enjoyment of the Work by the public
-as contemplated by Affirmer's express Statement of Purpose.
-
-3. Public License Fallback. Should any part of the Waiver for any reason
-be judged legally invalid or ineffective under applicable law, then the
-Waiver shall be preserved to the maximum extent permitted taking into
-account Affirmer's express Statement of Purpose. In addition, to the
-extent the Waiver is so judged Affirmer hereby grants to each affected
-person a royalty-free, non transferable, non sublicensable, non exclusive,
-irrevocable and unconditional license to exercise Affirmer's Copyright and
-Related Rights in the Work (i) in all territories worldwide, (ii) for the
-maximum duration provided by applicable law or treaty (including future
-time extensions), (iii) in any current or future medium and for any number
-of copies, and (iv) for any purpose whatsoever, including without
-limitation commercial, advertising or promotional purposes (the
-"License"). The License shall be deemed effective as of the date CC0 was
-applied by Affirmer to the Work. Should any part of the License for any
-reason be judged legally invalid or ineffective under applicable law, such
-partial invalidity or ineffectiveness shall not invalidate the remainder
-of the License, and in such case Affirmer hereby affirms that he or she
-will not (i) exercise any of his or her remaining Copyright and Related
-Rights in the Work or (ii) assert any associated claims and causes of
-action with respect to the Work, in either case contrary to Affirmer's
-express Statement of Purpose.
-
-4. Limitations and Disclaimers.
-
- a. No trademark or patent rights held by Affirmer are waived, abandoned,
-    surrendered, licensed or otherwise affected by this document.
- b. Affirmer offers the Work as-is and makes no representations or
-    warranties of any kind concerning the Work, express, implied,
-    statutory or otherwise, including without limitation warranties of
-    title, merchantability, fitness for a particular purpose, non
-    infringement, or the absence of latent or other defects, accuracy, or
-    the present or absence of errors, whether or not discoverable, all to
-    the greatest extent permissible under applicable law.
- c. Affirmer disclaims responsibility for clearing rights of other persons
-    that may apply to the Work or any use thereof, including without
-    limitation any person's Copyright and Related Rights in the Work.
-    Further, Affirmer disclaims responsibility for obtaining any necessary
-    consents, permissions or other rights required for any use of the
-    Work.
- d. Affirmer understands and acknowledges that Creative Commons is not a
-    party to this document and has no duty or obligation with respect to
-    this CC0 or use of the Work.
-
-
-License text 118 of 351
+License text 119 of 352
 Used by:
 - ecdsa 0.17.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/signatures
 - ed25519 2.2.3 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/signatures/tree/master/ed25519
@@ -8465,7 +8488,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 119 of 351
+License text 120 of 352
 Used by:
 - ecdsa 0.17.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/signatures
 - ed25519 3.0.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/signatures
@@ -8500,7 +8523,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 120 of 351
+License text 121 of 352
 Used by:
 - ed25519 2.2.3 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/signatures/tree/master/ed25519
 - signature 2.2.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/traits/tree/master/signature
@@ -8533,7 +8556,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 121 of 351
+License text 122 of 352
 Used by:
 - ed25519-dalek 2.2.0 (crate, BSD-3-Clause) https://github.com/dalek-cryptography/curve25519-dalek/tree/main/ed25519-dalek
 - ed25519-dalek 3.0.0 (crate, BSD-3-Clause) https://github.com/dalek-cryptography/curve25519-dalek/tree/main/ed25519-dalek
@@ -8569,7 +8592,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 122 of 351
+License text 123 of 352
 Used by:
 - either 1.19.0 (crate, MIT OR Apache-2.0) https://github.com/rayon-rs/either
 - itertools 0.13.0 (crate, MIT OR Apache-2.0) https://github.com/rust-itertools/itertools
@@ -8606,7 +8629,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 123 of 351
+License text 124 of 352
 Used by:
 - elliptic-curve 0.14.3 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/traits
 - p256 0.14.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/elliptic-curves
@@ -8640,7 +8663,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 124 of 351
+License text 125 of 352
 Used by:
 - encoding_rs 0.8.42 (crate, (Apache-2.0 OR MIT) AND BSD-3-Clause) https://github.com/hsivonen/encoding_rs
 - multiversion_no_op 1.0.0 (crate, Apache-2.0 OR MIT) https://github.com/hsivonen/multiversion_no_op
@@ -8674,7 +8697,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 125 of 351
+License text 126 of 352
 Used by:
 - encoding_rs 0.8.42 (crate, (Apache-2.0 OR MIT) AND BSD-3-Clause) https://github.com/hsivonen/encoding_rs
 
@@ -8707,7 +8730,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 126 of 351
+License text 127 of 352
 Used by:
 - equator 0.4.2 (crate, MIT) https://github.com/sarah-ek/equator/
 - equator-macro 0.4.2 (crate, MIT) https://github.com/sarah-ek/equator/
@@ -8736,7 +8759,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 127 of 351
+License text 128 of 352
 Used by:
 - equivalent 1.0.2 (crate, Apache-2.0 OR MIT) https://github.com/indexmap-rs/equivalent
 
@@ -8768,7 +8791,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 128 of 351
+License text 129 of 352
 Used by:
 - exr 1.74.2 (crate, BSD-3-Clause) https://github.com/johannesvollmer/exrs
 
@@ -8808,7 +8831,7 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 129 of 351
+License text 130 of 352
 Used by:
 - extfmt 0.2.0 (crate, Apache-2.0) https://github.com/Gilnaa/extfmt
 
@@ -8882,7 +8905,7 @@ While redistributing the Work or Derivative Works thereof, You may choose to off
 END OF TERMS AND CONDITIONS
 
 
-License text 130 of 351
+License text 131 of 352
 Used by:
 - fallible-iterator 0.3.0 (crate, MIT OR Apache-2.0) https://github.com/sfackler/rust-fallible-iterator
 
@@ -8908,7 +8931,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 131 of 351
+License text 132 of 352
 Used by:
 - fallible-streaming-iterator 0.1.9 (crate, MIT OR Apache-2.0) https://github.com/sfackler/fallible-streaming-iterator
 
@@ -8934,7 +8957,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 132 of 351
+License text 133 of 352
 Used by:
 - fast_image_resize 5.5.0 (crate, MIT OR Apache-2.0) https://github.com/cykooz/fast_image_resize
 
@@ -9142,7 +9165,7 @@ Used by:
    limitations under the License.
 
 
-License text 133 of 351
+License text 134 of 352
 Used by:
 - fast_image_resize 5.5.0 (crate, MIT OR Apache-2.0) https://github.com/cykooz/fast_image_resize
 
@@ -9170,7 +9193,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 134 of 351
+License text 135 of 352
 Used by:
 - fax 0.2.7 (crate, MIT) https://github.com/pdf-rs/fax
 
@@ -9184,7 +9207,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 135 of 351
+License text 136 of 352
 Used by:
 - fdeflate 0.3.7 (crate, MIT OR Apache-2.0) https://github.com/image-rs/fdeflate
 - half 2.7.1 (crate, MIT OR Apache-2.0) https://github.com/VoidStarKat/half-rs
@@ -9223,7 +9246,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 136 of 351
+License text 137 of 352
 Used by:
 - ff 0.14.0 (crate, MIT OR Apache-2.0) https://github.com/zkcrypto/ff
 
@@ -9251,9 +9274,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 137 of 351
+License text 138 of 352
 Used by:
-- flate2 1.1.10 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/flate2-rs
+- flate2 1.1.11 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/flate2-rs
 
 ----------------------------------------------------------------------
 Copyright (c) 2014-2026 Alex Crichton
@@ -9283,7 +9306,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 138 of 351
+License text 139 of 352
 Used by:
 - fnv 1.0.7 (crate, Apache-2.0 OR MIT) https://github.com/servo/rust-fnv
 
@@ -9315,7 +9338,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 139 of 351
+License text 140 of 352
 Used by:
 - foldhash 0.2.0 (crate, Zlib) https://github.com/orlp/foldhash
 
@@ -9341,7 +9364,7 @@ the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 
 
-License text 140 of 351
+License text 141 of 352
 Used by:
 - form_urlencoded 1.2.2 (crate, MIT OR Apache-2.0) https://github.com/servo/rust-url
 
@@ -9373,7 +9396,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 141 of 351
+License text 142 of 352
 Used by:
 - funty 2.0.0 (crate, MIT) https://github.com/myrrlyn/funty
 
@@ -9401,7 +9424,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 142 of 351
+License text 143 of 352
 Used by:
 - futures-channel 0.3.34 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/futures-rs
 - futures-core 0.3.34 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/futures-rs
@@ -9616,7 +9639,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 143 of 351
+License text 144 of 352
 Used by:
 - futures-channel 0.3.34 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/futures-rs
 - futures-core 0.3.34 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/futures-rs
@@ -9655,7 +9678,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 144 of 351
+License text 145 of 352
 Used by:
 - generic-array 0.14.7 (crate, MIT) https://github.com/fizyk20/generic-array
 
@@ -9683,7 +9706,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 145 of 351
+License text 146 of 352
 Used by:
 - get-nonce 1.0.1 (npm, MIT) https://github.com/theKashey/get-nonce
 
@@ -9711,7 +9734,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 146 of 351
+License text 147 of 352
 Used by:
 - getrandom 0.2.17 (crate, MIT OR Apache-2.0) https://github.com/rust-random/getrandom
 - getrandom 0.3.4 (crate, MIT OR Apache-2.0) https://github.com/rust-random/getrandom
@@ -9922,7 +9945,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 147 of 351
+License text 148 of 352
 Used by:
 - getrandom 0.2.17 (crate, MIT OR Apache-2.0) https://github.com/rust-random/getrandom
 
@@ -9955,7 +9978,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 148 of 351
+License text 149 of 352
 Used by:
 - getrandom 0.3.4 (crate, MIT OR Apache-2.0) https://github.com/rust-random/getrandom
 
@@ -9988,7 +10011,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 149 of 351
+License text 150 of 352
 Used by:
 - getrandom 0.4.3 (crate, MIT OR Apache-2.0) https://github.com/rust-random/getrandom
 
@@ -10021,7 +10044,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 150 of 351
+License text 151 of 352
 Used by:
 - gif 0.14.2 (crate, MIT OR Apache-2.0) https://github.com/image-rs/image-gif
 
@@ -10049,7 +10072,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 151 of 351
+License text 152 of 352
 Used by:
 - gifenc 1.0.3 (npm, MIT) https://github.com/mattdesl/gifenc
 
@@ -10076,7 +10099,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
 OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 152 of 351
+License text 153 of 352
 Used by:
 - h2 0.4.19 (crate, MIT) https://github.com/hyperium/h2
 
@@ -10108,7 +10131,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 153 of 351
+License text 154 of 352
 Used by:
 - hashbrown 0.12.3 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/hashbrown
 - hashbrown 0.17.1 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/hashbrown
@@ -10141,7 +10164,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 154 of 351
+License text 155 of 352
 Used by:
 - hashlink 0.12.2 (crate, MIT OR Apache-2.0) https://github.com/djc/hashlink
 
@@ -10174,7 +10197,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 155 of 351
+License text 156 of 352
 Used by:
 - heck 0.5.0 (crate, MIT OR Apache-2.0) https://github.com/withoutboats/heck
 - unicode-segmentation 1.13.3 (crate, MIT OR Apache-2.0) https://github.com/unicode-rs/unicode-segmentation
@@ -10207,7 +10230,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 156 of 351
+License text 157 of 352
 Used by:
 - hex 0.4.3 (crate, MIT OR Apache-2.0) https://github.com/KokaKiwi/rust-hex
 
@@ -10234,7 +10257,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 157 of 351
+License text 158 of 352
 Used by:
 - hex_fmt 0.3.0 (crate, MIT OR Apache-2.0) https://github.com/poanetwork/hex_fmt
 
@@ -10262,7 +10285,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 158 of 351
+License text 159 of 352
 Used by:
 - html5ever 0.39.0 (crate, MIT OR Apache-2.0) https://github.com/servo/html5ever
 - markup5ever 0.39.0 (crate, MIT OR Apache-2.0) https://github.com/servo/html5ever
@@ -10296,7 +10319,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 159 of 351
+License text 160 of 352
 Used by:
 - http 1.5.0 (crate, MIT OR Apache-2.0) https://github.com/hyperium/http
 
@@ -10504,7 +10527,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 160 of 351
+License text 161 of 352
 Used by:
 - http 1.5.0 (crate, MIT OR Apache-2.0) https://github.com/hyperium/http
 
@@ -10536,7 +10559,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 161 of 351
+License text 162 of 352
 Used by:
 - http-body 1.1.0 (crate, MIT) https://github.com/hyperium/http-body
 - http-body-util 0.1.5 (crate, MIT) https://github.com/hyperium/http-body
@@ -10569,7 +10592,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 162 of 351
+License text 163 of 352
 Used by:
 - httparse 1.10.1 (crate, MIT OR Apache-2.0) https://github.com/seanmonstar/httparse
 
@@ -10595,7 +10618,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 163 of 351
+License text 164 of 352
 Used by:
 - httpdate 1.0.3 (crate, MIT OR Apache-2.0) https://github.com/pyfisch/httpdate
 
@@ -10621,7 +10644,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 164 of 351
+License text 165 of 352
 Used by:
 - hyper 1.12.0 (crate, MIT) https://github.com/hyperium/hyper
 - unicase 2.9.0 (crate, MIT OR Apache-2.0) https://github.com/seanmonstar/unicase
@@ -10648,7 +10671,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 165 of 351
+License text 166 of 352
 Used by:
 - hyper-rustls 0.27.10 (crate, Apache-2.0 OR ISC OR MIT) https://github.com/rustls/hyper-rustls
 - rustls 0.23.46 (crate, Apache-2.0 OR ISC OR MIT) https://github.com/rustls/rustls
@@ -10671,7 +10694,7 @@ ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 THIS SOFTWARE.
 
 
-License text 166 of 351
+License text 167 of 352
 Used by:
 - hyper-rustls 0.27.10 (crate, Apache-2.0 OR ISC OR MIT) https://github.com/rustls/hyper-rustls
 - rustls 0.23.46 (crate, Apache-2.0 OR ISC OR MIT) https://github.com/rustls/rustls
@@ -10704,7 +10727,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 167 of 351
+License text 168 of 352
 Used by:
 - hyper-tls 0.6.0 (crate, MIT OR Apache-2.0) https://github.com/hyperium/hyper-tls
 
@@ -10730,7 +10753,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 168 of 351
+License text 169 of 352
 Used by:
 - hyper-util 0.1.21 (crate, MIT) https://github.com/hyperium/hyper-util
 
@@ -10756,7 +10779,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 169 of 351
+License text 170 of 352
 Used by:
 - ico 0.6.0 (crate, MIT) https://github.com/mdsteele/rust-ico
 
@@ -10784,7 +10807,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 170 of 351
+License text 171 of 352
 Used by:
 - icu_collections 2.3.0 (crate, Unicode-3.0) https://github.com/unicode-org/icu4x
 - icu_locale_core 2.3.0 (crate, Unicode-3.0) https://github.com/unicode-org/icu4x
@@ -10854,7 +10877,7 @@ Portions of ICU4X may have been adapted from ICU4C and/or ICU4J.
 ICU 1.8.1 to ICU 57.1 © 1995-2016 International Business Machines Corporation and others.
 
 
-License text 171 of 351
+License text 172 of 352
 Used by:
 - id3 1.17.2 (crate, MIT) https://codeberg.org/polyfloyd/rust-id3
 
@@ -10882,7 +10905,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 172 of 351
+License text 173 of 352
 Used by:
 - idna 1.1.0 (crate, MIT OR Apache-2.0) https://github.com/servo/rust-url/
 - percent-encoding 2.3.2 (crate, MIT OR Apache-2.0) https://github.com/servo/rust-url/
@@ -10916,7 +10939,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 173 of 351
+License text 174 of 352
 Used by:
 - idna_adapter 1.2.2 (crate, Apache-2.0 OR MIT) https://github.com/hsivonen/idna_adapter
 
@@ -10948,7 +10971,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 174 of 351
+License text 175 of 352
 Used by:
 - img-parts 0.4.0 (crate, MIT OR Apache-2.0) https://github.com/paolobarbolini/img-parts
 
@@ -10976,7 +10999,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 175 of 351
+License text 176 of 352
 Used by:
 - indexmap 1.9.3 (crate, Apache-2.0 OR MIT) https://github.com/bluss/indexmap
 - indexmap 2.14.2 (crate, Apache-2.0 OR MIT) https://github.com/indexmap-rs/indexmap
@@ -11009,7 +11032,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 176 of 351
+License text 177 of 352
 Used by:
 - infer 0.22.0 (crate, MIT) https://github.com/bojand/infer
 
@@ -11037,7 +11060,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 177 of 351
+License text 178 of 352
 Used by:
 - ipnet 2.12.2 (crate, MIT OR Apache-2.0) https://github.com/krisprice/ipnet
 
@@ -11245,7 +11268,7 @@ Used by:
    limitations under the License.
 
 
-License text 178 of 351
+License text 179 of 352
 Used by:
 - ipnet 2.12.2 (crate, MIT OR Apache-2.0) https://github.com/krisprice/ipnet
 
@@ -11259,7 +11282,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 179 of 351
+License text 180 of 352
 Used by:
 - jfifdump 0.6.0 (crate, MIT OR Apache-2.0) https://github.com/vstroebel/jfifdump (the package ships no license file; the text is from its repository)
 
@@ -11291,7 +11314,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 180 of 351
+License text 181 of 352
 Used by:
 - json-patch 4.2.0 (crate, MIT OR Apache-2.0) https://github.com/idubrov/json-patch
 
@@ -11319,7 +11342,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 181 of 351
+License text 182 of 352
 Used by:
 - jsonptr 0.7.1 (crate, MIT OR Apache-2.0) https://github.com/chanced/jsonptr
 
@@ -11527,7 +11550,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 182 of 351
+License text 183 of 352
 Used by:
 - jsonptr 0.7.1 (crate, MIT OR Apache-2.0) https://github.com/chanced/jsonptr
 
@@ -11555,7 +11578,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 183 of 351
+License text 184 of 352
 Used by:
 - keyboard-types 0.8.3 (crate, MIT OR Apache-2.0) https://github.com/rust-windowing/keyboard-types
 
@@ -11581,7 +11604,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 184 of 351
+License text 185 of 352
 Used by:
 - lebe 0.5.3 (crate, BSD-3-Clause) https://github.com/johannesvollmer/lebe
 
@@ -11614,7 +11637,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 185 of 351
+License text 186 of 352
 Used by:
 - libc 0.2.190 (crate, MIT OR Apache-2.0) https://github.com/rust-lang/libc
 
@@ -11646,7 +11669,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 186 of 351
+License text 187 of 352
 Used by:
 - libloading 0.8.9 (crate, ISC) https://github.com/nagisa/rust_libloading/
 
@@ -11665,7 +11688,7 @@ NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE US
 THIS SOFTWARE.
 
 
-License text 187 of 351
+License text 188 of 352
 Used by:
 - libm 0.2.16 (crate, MIT) https://github.com/rust-lang/compiler-builtins
 
@@ -11930,7 +11953,7 @@ have been licensed under extremely permissive terms.
 Copyright notices are retained in src/* files where relevant.
 
 
-License text 188 of 351
+License text 189 of 352
 Used by:
 - libsqlite3-sys 0.39.1 (crate, MIT) https://github.com/rusqlite/rusqlite
 - rusqlite 0.41.1 (crate, MIT) https://github.com/rusqlite/rusqlite
@@ -11957,7 +11980,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 189 of 351
+License text 190 of 352
 Used by:
 - litrs 1.0.0 (crate, MIT OR Apache-2.0) https://github.com/LukasKalbertodt/litrs
 
@@ -11989,7 +12012,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 190 of 351
+License text 191 of 352
 Used by:
 - lock_api 0.4.14 (crate, MIT OR Apache-2.0) https://github.com/Amanieu/parking_lot
 - parking_lot 0.12.5 (crate, MIT OR Apache-2.0) https://github.com/Amanieu/parking_lot
@@ -12023,7 +12046,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 191 of 351
+License text 192 of 352
 Used by:
 - loop9 0.1.5 (crate, MIT) https://gitlab.com/kornelski/loop9
 
@@ -12037,7 +12060,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 192 of 351
+License text 193 of 352
 Used by:
 - matchit 0.8.4 (crate, MIT AND BSD-3-Clause) https://github.com/ibraheemdev/matchit
 
@@ -12065,7 +12088,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 193 of 351
+License text 194 of 352
 Used by:
 - matchit 0.8.4 (crate, MIT AND BSD-3-Clause) https://github.com/ibraheemdev/matchit
 
@@ -12101,7 +12124,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 194 of 351
+License text 195 of 352
 Used by:
 - matrixmultiply 0.3.11 (crate, MIT OR Apache-2.0) https://github.com/bluss/matrixmultiply/
 
@@ -12135,7 +12158,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 195 of 351
+License text 196 of 352
 Used by:
 - maybe-rayon 0.1.1 (crate, MIT) https://github.com/shssoichiro/maybe-rayon
 
@@ -12163,7 +12186,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 196 of 351
+License text 197 of 352
 Used by:
 - mime 0.3.17 (crate, MIT OR Apache-2.0) https://github.com/hyperium/mime
 
@@ -12189,7 +12212,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 197 of 351
+License text 198 of 352
 Used by:
 - mime_guess 2.0.5 (crate, MIT) https://github.com/abonander/mime_guess
 
@@ -12217,7 +12240,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 198 of 351
+License text 199 of 352
 Used by:
 - minimal-lexical 0.2.1 (crate, MIT OR Apache-2.0) https://github.com/Alexhuszagh/minimal-lexical
 
@@ -12261,7 +12284,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 199 of 351
+License text 200 of 352
 Used by:
 - miniz_oxide 0.8.9 (crate, MIT OR Zlib OR Apache-2.0) https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide
 - miniz_oxide 0.9.1 (crate, MIT OR Zlib OR Apache-2.0) https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide
@@ -12294,7 +12317,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 200 of 351
+License text 201 of 352
 Used by:
 - miniz_oxide 0.8.9 (crate, MIT OR Zlib OR Apache-2.0) https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide
 - miniz_oxide 0.9.1 (crate, MIT OR Zlib OR Apache-2.0) https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide
@@ -12316,7 +12339,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 
 
-License text 201 of 351
+License text 202 of 352
 Used by:
 - mio 1.2.4 (crate, MIT) https://github.com/tokio-rs/mio
 
@@ -12342,7 +12365,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 202 of 351
+License text 203 of 352
 Used by:
 - moxcms 0.8.1 (crate, BSD-3-Clause OR Apache-2.0) https://github.com/awxkee/moxcms
 - pxfm 0.1.30 (crate, BSD-3-Clause OR Apache-2.0) https://github.com/awxkee/pxfm
@@ -12551,7 +12574,7 @@ Used by:
    limitations under the License.
 
 
-License text 203 of 351
+License text 204 of 352
 Used by:
 - moxcms 0.8.1 (crate, BSD-3-Clause OR Apache-2.0) https://github.com/awxkee/moxcms
 - pxfm 0.1.30 (crate, BSD-3-Clause OR Apache-2.0) https://github.com/awxkee/pxfm
@@ -12585,7 +12608,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 204 of 351
+License text 205 of 352
 Used by:
 - muda 0.20.0 (crate, Apache-2.0 OR MIT) https://github.com/tauri-apps/muda
 - tray-icon 0.25.1 (crate, MIT OR Apache-2.0) https://github.com/tauri-apps/tray-icon
@@ -12614,7 +12637,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 205 of 351
+License text 206 of 352
 Used by:
 - muda 0.20.0 (crate, Apache-2.0 OR MIT) https://github.com/tauri-apps/muda
 
@@ -12640,7 +12663,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/muda.git
 Creator: Person: Daniel Thompson-Yvetot
 
 
-License text 206 of 351
+License text 207 of 352
 Used by:
 - multer 3.1.0 (crate, MIT) https://github.com/rwf2/multer
 
@@ -12668,7 +12691,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 207 of 351
+License text 208 of 352
 Used by:
 - native-tls 0.2.18 (crate, MIT OR Apache-2.0) https://github.com/rust-native-tls/rust-native-tls
 
@@ -12694,7 +12717,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 208 of 351
+License text 209 of 352
 Used by:
 - ndarray 0.16.1 (crate, MIT OR Apache-2.0) https://github.com/rust-ndarray/ndarray
 
@@ -12728,7 +12751,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 209 of 351
+License text 210 of 352
 Used by:
 - new_debug_unreachable 1.0.6 (crate, MIT) https://github.com/mbrubeck/rust-debug-unreachable
 
@@ -12760,7 +12783,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 210 of 351
+License text 211 of 352
 Used by:
 - no_std_io2 0.9.4 (crate, Apache-2.0 OR MIT) https://github.com/wcampbell0x2a/no-std-io2
 
@@ -12786,7 +12809,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 211 of 351
+License text 212 of 352
 Used by:
 - nom 7.1.3 (crate, MIT) https://github.com/Geal/nom
 - nom 8.0.0 (crate, MIT) https://github.com/rust-bakery/nom
@@ -12814,7 +12837,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 212 of 351
+License text 213 of 352
 Used by:
 - non-empty-string 0.2.6 (crate, MIT OR Apache-2.0) https://github.com/MidasLamb/non-empty-string
 
@@ -13022,7 +13045,7 @@ Used by:
    limitations under the License.
 
 
-License text 213 of 351
+License text 214 of 352
 Used by:
 - non-empty-string 0.2.6 (crate, MIT OR Apache-2.0) https://github.com/MidasLamb/non-empty-string
 
@@ -13050,7 +13073,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 214 of 351
+License text 215 of 352
 Used by:
 - nonempty-collections 1.4.0 (crate, MIT) https://github.com/fosskers/nonempty-collections
 
@@ -13076,7 +13099,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 215 of 351
+License text 216 of 352
 Used by:
 - noop_proc_macro 0.3.0 (crate, MIT) https://github.com/lu-zero/noop_proc_macro
 - simd_helpers 0.1.0 (crate, MIT) https://github.com/lu-zero/simd_helpers (the package ships no license file; the text is from its repository)
@@ -13105,7 +13128,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 216 of 351
+License text 217 of 352
 Used by:
 - num-conv 0.2.2 (crate, MIT OR Apache-2.0) https://github.com/jhpratt/num-conv
 
@@ -13131,7 +13154,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 217 of 351
+License text 218 of 352
 Used by:
 - option-ext 0.2.0 (crate, MPL-2.0) https://github.com/soc/option-ext
 - selectors 0.38.0 (crate, MPL-2.0) https://github.com/servo/stylo (the package ships no license file; the text is from its repository)
@@ -13512,7 +13535,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
   defined by the Mozilla Public License, v. 2.0.
 
 
-License text 218 of 351
+License text 219 of 352
 Used by:
 - ort 2.0.0-rc.10 (crate, MIT OR Apache-2.0) https://github.com/pykeio/ort
 - ort-sys 2.0.0-rc.10 (crate, MIT OR Apache-2.0) https://github.com/pykeio/ort
@@ -13542,7 +13565,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 219 of 351
+License text 220 of 352
 Used by:
 - p384 0.14.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/elliptic-curves
 
@@ -13574,7 +13597,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 220 of 351
+License text 221 of 352
 Used by:
 - parsenic 0.2.1 (crate, Apache-2.0 OR BSL-1.0 OR MIT) https://github.com/ardaku/parsenic
 - ryu 1.0.23 (crate, Apache-2.0 OR BSL-1.0) https://github.com/dtolnay/ryu
@@ -13606,7 +13629,7 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 221 of 351
+License text 222 of 352
 Used by:
 - pem 4.0.0 (crate, MIT) https://github.com/jcreekmore/pem-rs
 
@@ -13634,7 +13657,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 222 of 351
+License text 223 of 352
 Used by:
 - pem-rfc7468 0.7.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/formats/tree/master/pem-rfc7468
 
@@ -13666,7 +13689,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 223 of 351
+License text 224 of 352
 Used by:
 - pem-rfc7468 1.0.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/formats
 
@@ -13698,7 +13721,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 224 of 351
+License text 225 of 352
 Used by:
 - phf 0.13.1 (crate, MIT) https://github.com/rust-phf/rust-phf
 - phf_generator 0.13.1 (crate, MIT) https://github.com/rust-phf/rust-phf
@@ -13728,7 +13751,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 225 of 351
+License text 226 of 352
 Used by:
 - pix 0.14.0 (crate, MIT OR Apache-2.0) https://github.com/DougLau/pix
 
@@ -13756,7 +13779,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 226 of 351
+License text 227 of 352
 Used by:
 - pkcs1 0.7.5 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/formats/tree/master/pkcs1
 - spki 0.7.3 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/formats/tree/master/spki
@@ -13789,7 +13812,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 227 of 351
+License text 228 of 352
 Used by:
 - plist 1.10.1 (crate, MIT) https://github.com/ebarnard/rust-plist/
 
@@ -13815,7 +13838,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 228 of 351
+License text 229 of 352
 Used by:
 - png 0.18.1 (crate, MIT OR Apache-2.0) https://github.com/image-rs/image-png
 
@@ -13847,7 +13870,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 229 of 351
+License text 230 of 352
 Used by:
 - png_pong 0.10.0 (crate, Apache-2.0 OR Zlib) https://github.com/AldaronLau/png_pong
 
@@ -13874,7 +13897,7 @@ freely, subject to the following restrictions:
     distribution.
 
 
-License text 230 of 351
+License text 231 of 352
 Used by:
 - powerfmt 0.2.0 (crate, MIT OR Apache-2.0) https://github.com/jhpratt/powerfmt
 
@@ -14083,7 +14106,7 @@ Used by:
    limitations under the License.
 
 
-License text 231 of 351
+License text 232 of 352
 Used by:
 - powerfmt 0.2.0 (crate, MIT OR Apache-2.0) https://github.com/jhpratt/powerfmt
 
@@ -14109,7 +14132,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 232 of 351
+License text 233 of 352
 Used by:
 - ppv-lite86 0.2.21 (crate, MIT OR Apache-2.0) https://github.com/cryptocorrosion/cryptocorrosion
 
@@ -14317,7 +14340,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 233 of 351
+License text 234 of 352
 Used by:
 - ppv-lite86 0.2.21 (crate, MIT OR Apache-2.0) https://github.com/cryptocorrosion/cryptocorrosion
 
@@ -14349,7 +14372,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 234 of 351
+License text 235 of 352
 Used by:
 - precomputed-hash 0.1.1 (crate, MIT) https://github.com/emilio/precomputed-hash
 
@@ -14377,7 +14400,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 235 of 351
+License text 236 of 352
 Used by:
 - primefield 0.14.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/elliptic-curves
 
@@ -14409,7 +14432,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 236 of 351
+License text 237 of 352
 Used by:
 - primeorder 0.14.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/elliptic-curves
 
@@ -14441,7 +14464,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 237 of 351
+License text 238 of 352
 Used by:
 - proc-macro-error 1.0.4 (crate, MIT OR Apache-2.0) https://gitlab.com/CreepySkeleton/proc-macro-error
 - proc-macro-error-attr 1.0.4 (crate, MIT OR Apache-2.0) https://gitlab.com/CreepySkeleton/proc-macro-error
@@ -14650,7 +14673,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 238 of 351
+License text 239 of 352
 Used by:
 - proc-macro-error 1.0.4 (crate, MIT OR Apache-2.0) https://gitlab.com/CreepySkeleton/proc-macro-error
 - proc-macro-error-attr 1.0.4 (crate, MIT OR Apache-2.0) https://gitlab.com/CreepySkeleton/proc-macro-error
@@ -14679,7 +14702,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 239 of 351
+License text 240 of 352
 Used by:
 - profiling 1.0.18 (crate, MIT OR Apache-2.0) https://github.com/aclysma/profiling (the package ships no license file; the text is from its repository)
 - profiling-procmacros 1.0.18 (crate, MIT OR Apache-2.0) https://github.com/aclysma/profiling (the package ships no license file; the text is from its repository)
@@ -14708,7 +14731,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 240 of 351
+License text 241 of 352
 Used by:
 - proptest 1.12.0 (crate, MIT OR Apache-2.0) https://github.com/proptest-rs/proptest
 
@@ -14740,7 +14763,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 241 of 351
+License text 242 of 352
 Used by:
 - pulp 0.22.3 (crate, MIT) https://github.com/sarah-quinones/pulp/
 - pulp-wasm-simd-flag 0.1.1 (crate, MIT) https://github.com/sarah-quinones/pulp/ (the package ships no license file; the text is from its repository)
@@ -14769,7 +14792,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 242 of 351
+License text 243 of 352
 Used by:
 - qoi 0.4.1 (crate, MIT OR Apache-2.0) https://github.com/aldanor/qoi-rust
 
@@ -14801,7 +14824,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 243 of 351
+License text 244 of 352
 Used by:
 - qrcode 0.14.1 (crate, MIT OR Apache-2.0) https://github.com/kennytm/qrcode-rust
 
@@ -14826,7 +14849,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 244 of 351
+License text 245 of 352
 Used by:
 - quick-error 2.0.1 (crate, MIT OR Apache-2.0) http://github.com/tailhook/quick-error
 
@@ -14852,7 +14875,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 245 of 351
+License text 246 of 352
 Used by:
 - quick-xml 0.41.0 (crate, MIT) https://github.com/tafia/quick-xml
 - quick-xml 0.42.0 (crate, MIT) https://github.com/tafia/quick-xml
@@ -14883,7 +14906,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 246 of 351
+License text 247 of 352
 Used by:
 - radium 0.7.0 (crate, MIT) https://github.com/bitvecto-rs/radium
 
@@ -14911,7 +14934,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 247 of 351
+License text 248 of 352
 Used by:
 - rand 0.10.3 (crate, MIT OR Apache-2.0) https://github.com/rust-random/rand
 - rand 0.8.8 (crate, MIT OR Apache-2.0) https://github.com/rust-random/rand
@@ -15098,7 +15121,7 @@ TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 END OF TERMS AND CONDITIONS
 
 
-License text 248 of 351
+License text 249 of 352
 Used by:
 - rand 0.10.3 (crate, MIT OR Apache-2.0) https://github.com/rust-random/rand
 - rand 0.8.8 (crate, MIT OR Apache-2.0) https://github.com/rust-random/rand
@@ -15138,7 +15161,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 249 of 351
+License text 250 of 352
 Used by:
 - rand_core 0.10.1 (crate, MIT OR Apache-2.0) https://github.com/rust-random/rand_core
 - rand_core 0.6.4 (crate, MIT OR Apache-2.0) https://github.com/rust-random/rand
@@ -15334,7 +15357,7 @@ APPENDIX: How to apply the Apache License to your work.
    identification within third-party archives.
 
 
-License text 250 of 351
+License text 251 of 352
 Used by:
 - rand_core 0.10.1 (crate, MIT OR Apache-2.0) https://github.com/rust-random/rand_core
 
@@ -15366,7 +15389,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 251 of 351
+License text 252 of 352
 Used by:
 - range-set 0.1.1 (crate, Apache-2.0) https://github.com/spearman/range-set
 
@@ -15574,7 +15597,7 @@ Used by:
    limitations under the License.
 
 
-License text 252 of 351
+License text 253 of 352
 Used by:
 - range-traits 0.3.2 (crate, MIT OR Apache-2.0) https://github.com/timothee-haudebourg/range-traits (the package ships no license file; the text is from its repository)
 - static-regular-grammar 2.0.2 (crate, MIT OR Apache-2.0) https://github.com/timothee-haudebourg/static-regular-grammar (the package ships no license file; the text is from its repository)
@@ -15603,7 +15626,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 253 of 351
+License text 254 of 352
 Used by:
 - rasn 0.28.15 (crate, MIT OR Apache-2.0) https://github.com/librasn/rasn
 - rasn-derive 0.28.15 (crate, MIT OR Apache-2.0) https://github.com/librasn/rasn
@@ -15625,7 +15648,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 254 of 351
+License text 255 of 352
 Used by:
 - rasn 0.28.15 (crate, MIT OR Apache-2.0) https://github.com/librasn/rasn
 - rasn-cms 0.28.15 (crate, MIT OR Apache-2.0) https://github.com/librasn/rasn (the package ships no license file; the text is from its repository)
@@ -15658,7 +15681,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 255 of 351
+License text 256 of 352
 Used by:
 - rav1e 0.8.1 (crate, BSD-2-Clause) https://github.com/xiph/rav1e/
 
@@ -15690,7 +15713,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 256 of 351
+License text 257 of 352
 Used by:
 - ravif 0.13.0 (crate, BSD-3-Clause) https://github.com/kornelski/cavif-rs
 
@@ -15726,7 +15749,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 257 of 351
+License text 258 of 352
 Used by:
 - raw-cpuid 11.6.0 (crate, MIT) https://github.com/gz/rust-cpuid
 
@@ -15754,7 +15777,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 258 of 351
+License text 259 of 352
 Used by:
 - raw-window-handle 0.6.2 (crate, MIT OR Apache-2.0 OR Zlib) https://github.com/rust-windowing/raw-window-handle
 
@@ -15782,7 +15805,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 259 of 351
+License text 260 of 352
 Used by:
 - raw-window-handle 0.6.2 (crate, MIT OR Apache-2.0 OR Zlib) https://github.com/rust-windowing/raw-window-handle
 
@@ -15800,7 +15823,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 
 
-License text 260 of 351
+License text 261 of 352
 Used by:
 - rayon 1.12.0 (crate, MIT OR Apache-2.0) https://github.com/rayon-rs/rayon
 - rayon-core 1.13.0 (crate, MIT OR Apache-2.0) https://github.com/rayon-rs/rayon
@@ -15833,7 +15856,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 261 of 351
+License text 262 of 352
 Used by:
 - rcgen 0.14.10 (crate, MIT OR Apache-2.0) https://github.com/rustls/rcgen
 
@@ -16054,7 +16077,7 @@ Apache License, version 2.0
    END OF TERMS AND CONDITIONS
 
 
-License text 262 of 351
+License text 263 of 352
 Used by:
 - react 19.3.0 (npm, MIT) https://github.com/react/react
 - react-dom 19.3.0 (npm, MIT) https://github.com/react/react
@@ -16085,7 +16108,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 263 of 351
+License text 264 of 352
 Used by:
 - react-remove-scroll-bar 2.3.8 (npm, MIT) https://github.com/theKashey/react-remove-scroll-bar (the package ships no license file; the text is from its repository)
 
@@ -16113,7 +16136,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 264 of 351
+License text 265 of 352
 Used by:
 - react-resizable-panels 4.14.2 (npm, MIT) https://github.com/bvaughn/react-resizable-panels
 
@@ -16141,7 +16164,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 265 of 351
+License text 266 of 352
 Used by:
 - reqwest 0.13.5 (crate, MIT OR Apache-2.0) https://github.com/seanmonstar/reqwest
 
@@ -16349,7 +16372,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 266 of 351
+License text 267 of 352
 Used by:
 - reqwest 0.13.5 (crate, MIT OR Apache-2.0) https://github.com/seanmonstar/reqwest
 
@@ -16375,7 +16398,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 267 of 351
+License text 268 of 352
 Used by:
 - rfd 0.17.2 (crate, MIT) https://github.com/PolyMeilex/rfd
 
@@ -16403,7 +16426,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 268 of 351
+License text 269 of 352
 Used by:
 - rgb 0.8.53 (crate, MIT) https://github.com/kornelski/rust-rgb
 
@@ -16431,7 +16454,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 269 of 351
+License text 270 of 352
 Used by:
 - riff 2.0.0 (crate, MIT) https://github.com/frabert/riff
 
@@ -16456,7 +16479,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 270 of 351
+License text 271 of 352
 Used by:
 - ring 0.17.14 (crate, Apache-2.0 AND ISC) https://github.com/briansmith/ring
 
@@ -16472,7 +16495,7 @@ See src/polyfill/once_cell/LICENSE-APACHE and src/polyfill/once_cell/LICENSE-MIT
 for the license to code that was sourced from the once_cell project.
 
 
-License text 271 of 351
+License text 272 of 352
 Used by:
 - ring 0.17.14 (crate, Apache-2.0 AND ISC) https://github.com/briansmith/ring
 
@@ -16751,7 +16774,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 272 of 351
+License text 273 of 352
 Used by:
 - ring 0.17.14 (crate, Apache-2.0 AND ISC) https://github.com/briansmith/ring
 
@@ -16771,7 +16794,7 @@ OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-License text 273 of 351
+License text 274 of 352
 Used by:
 - rustls-pki-types 1.15.1 (crate, MIT OR Apache-2.0) https://github.com/rustls/pki-types
 
@@ -16979,7 +17002,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 274 of 351
+License text 275 of 352
 Used by:
 - rustls-pki-types 1.15.1 (crate, MIT OR Apache-2.0) https://github.com/rustls/pki-types
 
@@ -17011,7 +17034,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 275 of 351
+License text 276 of 352
 Used by:
 - rustls-webpki 0.103.16 (crate, ISC) https://github.com/rustls/webpki
 
@@ -17037,7 +17060,7 @@ The files under third-party/chromium are licensed as described in
 third-party/chromium/LICENSE.
 
 
-License text 276 of 351
+License text 277 of 352
 Used by:
 - same-file 1.0.6 (crate, Unlicense OR MIT) https://github.com/BurntSushi/same-file
 - winapi-util 0.1.11 (crate, Unlicense OR MIT) https://github.com/BurntSushi/winapi-util
@@ -17066,7 +17089,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 277 of 351
+License text 278 of 352
 Used by:
 - schannel 0.1.29 (crate, MIT) https://github.com/steffengy/schannel-rs
 
@@ -17080,7 +17103,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 278 of 351
+License text 279 of 352
 Used by:
 - schemars 0.8.22 (crate, MIT) https://github.com/GREsau/schemars
 - schemars 0.9.0 (crate, MIT) https://github.com/GREsau/schemars
@@ -17111,7 +17134,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 279 of 351
+License text 280 of 352
 Used by:
 - scopeguard 1.2.0 (crate, MIT OR Apache-2.0) https://github.com/bluss/scopeguard
 
@@ -17143,7 +17166,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 280 of 351
+License text 281 of 352
 Used by:
 - serde_spanned 1.1.1 (crate, MIT OR Apache-2.0) https://github.com/toml-rs/toml
 - toml 1.1.6+spec-1.1.0 (crate, MIT OR Apache-2.0) https://github.com/toml-rs/toml
@@ -17174,7 +17197,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 281 of 351
+License text 282 of 352
 Used by:
 - serde_urlencoded 0.7.1 (crate, MIT OR Apache-2.0) https://github.com/nox/serde_urlencoded
 
@@ -17206,7 +17229,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 282 of 351
+License text 283 of 352
 Used by:
 - serde-transcode 1.1.1 (crate, MIT OR Apache-2.0) https://github.com/sfackler/serde-transcode
 
@@ -17232,7 +17255,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 283 of 351
+License text 284 of 352
 Used by:
 - serdect 0.4.3 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/formats
 
@@ -17260,7 +17283,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 284 of 351
+License text 285 of 352
 Used by:
 - serialize-to-javascript 0.1.2 (crate, MIT OR Apache-2.0) https://github.com/chippers/serialize-to-javascript
 - serialize-to-javascript-impl 0.1.2 (crate, MIT OR Apache-2.0) https://github.com/chippers/serialize-to-javascript
@@ -17289,7 +17312,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 285 of 351
+License text 286 of 352
 Used by:
 - sha1 0.10.7 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/hashes
 - sha2 0.10.9 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/hashes
@@ -17324,7 +17347,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 286 of 351
+License text 287 of 352
 Used by:
 - sha1 0.11.0 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/hashes
 - sha2 0.11.0 (crate, MIT OR Apache-2.0) https://github.com/RustCrypto/hashes
@@ -17360,7 +17383,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 287 of 351
+License text 288 of 352
 Used by:
 - simd-adler32 0.3.10 (crate, MIT) https://github.com/mcountryman/simd-adler32
 
@@ -17388,7 +17411,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 288 of 351
+License text 289 of 352
 Used by:
 - siphasher 1.0.4 (crate, MIT OR Apache-2.0) https://github.com/jedisct1/rust-siphash
 
@@ -17402,7 +17425,7 @@ http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
 option.
 
 
-License text 289 of 351
+License text 290 of 352
 Used by:
 - slab 0.4.12 (crate, MIT) https://github.com/tokio-rs/slab
 
@@ -17434,7 +17457,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 290 of 351
+License text 291 of 352
 Used by:
 - smallvec 1.16.2 (crate, MIT OR Apache-2.0) https://github.com/servo/rust-smallvec
 - smallvec 2.0.0-alpha.10 (crate, MIT OR Apache-2.0) https://github.com/servo/rust-smallvec
@@ -17467,7 +17490,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 291 of 351
+License text 292 of 352
 Used by:
 - snafu 0.8.9 (crate, MIT OR Apache-2.0) https://github.com/shepmaster/snafu
 - snafu-derive 0.8.9 (crate, MIT OR Apache-2.0) https://github.com/shepmaster/snafu
@@ -17676,7 +17699,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 292 of 351
+License text 293 of 352
 Used by:
 - snafu 0.8.9 (crate, MIT OR Apache-2.0) https://github.com/shepmaster/snafu
 - snafu-derive 0.8.9 (crate, MIT OR Apache-2.0) https://github.com/shepmaster/snafu
@@ -17709,7 +17732,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 293 of 351
+License text 294 of 352
 Used by:
 - softbuffer 0.4.8 (crate, MIT OR Apache-2.0) https://github.com/rust-windowing/softbuffer
 
@@ -17917,7 +17940,7 @@ Apache License
    limitations under the License.
 
 
-License text 294 of 351
+License text 295 of 352
 Used by:
 - softbuffer 0.4.8 (crate, MIT OR Apache-2.0) https://github.com/rust-windowing/softbuffer
 
@@ -17943,10 +17966,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 295 of 351
+License text 296 of 352
 Used by:
 - spin 0.9.9 (crate, MIT) https://github.com/mvdnes/spin-rs
-- zip 9.3.0 (crate, MIT) https://github.com/zip-rs/zip2
+- zip 9.4.2 (crate, MIT) https://github.com/zip-rs/zip2
 
 ----------------------------------------------------------------------
 The MIT License (MIT)
@@ -17972,7 +17995,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 296 of 351
+License text 297 of 352
 Used by:
 - stable_deref_trait 1.2.1 (crate, MIT OR Apache-2.0) https://github.com/storyyeller/stable_deref_trait
 
@@ -18004,7 +18027,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 297 of 351
+License text 298 of 352
 Used by:
 - string_cache 0.9.0 (crate, MIT OR Apache-2.0) https://github.com/servo/string-cache
 
@@ -18036,7 +18059,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 298 of 351
+License text 299 of 352
 Used by:
 - strsim 0.11.1 (crate, MIT) https://github.com/rapidfuzz/strsim-rs
 
@@ -18066,7 +18089,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 299 of 351
+License text 300 of 352
 Used by:
 - subtle 2.6.1 (crate, BSD-3-Clause) https://github.com/dalek-cryptography/subtle
 
@@ -18102,7 +18125,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 300 of 351
+License text 301 of 352
 Used by:
 - synstructure 0.13.2 (crate, MIT) https://github.com/mystor/synstructure
 - synstructure 0.14.0 (crate, MIT) https://github.com/mystor/synstructure
@@ -18117,7 +18140,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 301 of 351
+License text 302 of 352
 Used by:
 - tao 0.37.1 (crate, Apache-2.0) https://github.com/tauri-apps/tao
 
@@ -18142,7 +18165,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/tao.git
 Creator: Person: Daniel Thompson-Yvetot
 
 
-License text 302 of 351
+License text 303 of 352
 Used by:
 - tap 1.0.1 (crate, MIT) https://github.com/myrrlyn/tap
 
@@ -18170,7 +18193,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 303 of 351
+License text 304 of 352
 Used by:
 - tempfile 3.27.0 (crate, MIT OR Apache-2.0) https://github.com/Stebalien/tempfile
 
@@ -18202,7 +18225,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 304 of 351
+License text 305 of 352
 Used by:
 - tendril 0.5.1 (crate, MIT OR Apache-2.0) https://github.com/servo/html5ever
 
@@ -18234,7 +18257,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 305 of 351
+License text 306 of 352
 Used by:
 - three 0.186.1 (npm, MIT) https://github.com/mrdoob/three.js
 
@@ -18262,7 +18285,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 306 of 351
+License text 307 of 352
 Used by:
 - tiff 0.11.3 (crate, MIT) https://github.com/image-rs/image-tiff
 
@@ -18290,7 +18313,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 307 of 351
+License text 308 of 352
 Used by:
 - time 0.3.55 (crate, MIT OR Apache-2.0) https://github.com/time-rs/time
 - time-core 0.1.9 (crate, MIT OR Apache-2.0) https://github.com/time-rs/time
@@ -18318,7 +18341,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 308 of 351
+License text 309 of 352
 Used by:
 - tokio 1.54.1 (crate, MIT) https://github.com/tokio-rs/tokio
 - tokio-util 0.7.20 (crate, MIT) https://github.com/tokio-rs/tokio
@@ -18347,7 +18370,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 309 of 351
+License text 310 of 352
 Used by:
 - tokio-macros 2.7.2 (crate, MIT) https://github.com/tokio-rs/tokio
 
@@ -18376,7 +18399,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 310 of 351
+License text 311 of 352
 Used by:
 - tokio-native-tls 0.3.1 (crate, MIT) https://github.com/tokio-rs/tls
 - tracing 0.1.44 (crate, MIT) https://github.com/tokio-rs/tracing
@@ -18410,7 +18433,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 311 of 351
+License text 312 of 352
 Used by:
 - tokio-rustls 0.26.6 (crate, MIT OR Apache-2.0) https://github.com/rustls/tokio-rustls
 
@@ -18618,7 +18641,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 312 of 351
+License text 313 of 352
 Used by:
 - tokio-rustls 0.26.6 (crate, MIT OR Apache-2.0) https://github.com/rustls/tokio-rustls
 
@@ -18650,7 +18673,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 313 of 351
+License text 314 of 352
 Used by:
 - tokio-tungstenite 0.29.0 (crate, MIT) https://github.com/snapview/tokio-tungstenite
 - tokio-tungstenite 0.30.0 (crate, MIT) https://github.com/snapview/tokio-tungstenite
@@ -18678,7 +18701,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 314 of 351
+License text 315 of 352
 Used by:
 - tower 0.5.3 (crate, MIT) https://github.com/tower-rs/tower
 - tower-layer 0.3.3 (crate, MIT) https://github.com/tower-rs/tower
@@ -18712,7 +18735,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 315 of 351
+License text 316 of 352
 Used by:
 - tower-http 0.6.11 (crate, MIT) https://github.com/tower-rs/tower-http
 
@@ -18744,7 +18767,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 316 of 351
+License text 317 of 352
 Used by:
 - tray-icon 0.25.1 (crate, MIT OR Apache-2.0) https://github.com/tauri-apps/tray-icon
 
@@ -18770,7 +18793,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/tray-icon.git
 Creator: Person: Daniel Thompson-Yvetot
 
 
-License text 317 of 351
+License text 318 of 352
 Used by:
 - trustmark 0.4.0 (crate, MIT) https://github.com/adobe/trustmark
 
@@ -18798,7 +18821,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 318 of 351
+License text 319 of 352
 Used by:
 - try-lock 0.2.5 (crate, MIT) https://github.com/seanmonstar/try-lock
 
@@ -18825,7 +18848,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 319 of 351
+License text 320 of 352
 Used by:
 - tslib 2.8.1 (npm, 0BSD) https://github.com/Microsoft/tslib
 
@@ -18844,7 +18867,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
 
-License text 320 of 351
+License text 321 of 352
 Used by:
 - tungstenite 0.29.0 (crate, MIT OR Apache-2.0) https://github.com/snapview/tungstenite-rs
 - tungstenite 0.30.0 (crate, MIT OR Apache-2.0) https://github.com/snapview/tungstenite-rs
@@ -18872,7 +18895,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 321 of 351
+License text 322 of 352
 Used by:
 - typenum 1.20.1 (crate, MIT OR Apache-2.0) https://github.com/paholg/typenum
 
@@ -18880,7 +18903,7 @@ Used by:
 MIT OR Apache-2.0
 
 
-License text 322 of 351
+License text 323 of 352
 Used by:
 - typenum 1.20.1 (crate, MIT OR Apache-2.0) https://github.com/paholg/typenum
 
@@ -19088,7 +19111,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
-License text 323 of 351
+License text 324 of 352
 Used by:
 - typenum 1.20.1 (crate, MIT OR Apache-2.0) https://github.com/paholg/typenum
 
@@ -19116,7 +19139,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 324 of 351
+License text 325 of 352
 Used by:
 - unarray 0.1.4 (crate, MIT OR Apache-2.0) https://github.com/cameron1024/unarray
 
@@ -19144,7 +19167,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 325 of 351
+License text 326 of 352
 Used by:
 - unicode-ident 1.0.26 (crate, (MIT OR Apache-2.0) AND Unicode-3.0) https://github.com/dtolnay/unicode-ident
 
@@ -19190,7 +19213,7 @@ dealings in these Data Files or Software without prior written
 authorization of the copyright holder.
 
 
-License text 326 of 351
+License text 327 of 352
 Used by:
 - untrusted 0.9.0 (crate, ISC) https://github.com/briansmith/untrusted
 
@@ -19210,7 +19233,7 @@ Used by:
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-License text 327 of 351
+License text 328 of 352
 Used by:
 - urlpattern 0.6.0 (crate, MIT) https://github.com/denoland/rust-urlpattern
 
@@ -19238,9 +19261,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 328 of 351
+License text 329 of 352
 Used by:
-- uuid 1.29.0 (crate, Apache-2.0 OR MIT) https://github.com/uuid-rs/uuid
+- uuid 1.29.1 (crate, Apache-2.0 OR MIT) https://github.com/uuid-rs/uuid
 
 ----------------------------------------------------------------------
 Copyright (c) 2014 The Rust Project Developers
@@ -19271,7 +19294,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 329 of 351
+License text 330 of 352
 Used by:
 - v_frame 0.3.9 (crate, BSD-2-Clause) https://github.com/rust-av/v_frame
 
@@ -19303,7 +19326,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 330 of 351
+License text 331 of 352
 Used by:
 - want 0.3.2 (crate, MIT) https://github.com/seanmonstar/want
 
@@ -19329,7 +19352,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
-License text 331 of 351
+License text 332 of 352
 Used by:
 - web-time 1.1.0 (crate, MIT OR Apache-2.0) https://github.com/daxpedda/web-time
 
@@ -19537,7 +19560,7 @@ Used by:
    limitations under the License.
 
 
-License text 332 of 351
+License text 333 of 352
 Used by:
 - web-time 1.1.0 (crate, MIT OR Apache-2.0) https://github.com/daxpedda/web-time
 
@@ -19565,7 +19588,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 333 of 351
+License text 334 of 352
 Used by:
 - webview2-com 0.39.1 (crate, MIT) https://github.com/wravery/webview2-rs (the package ships no license file; the text is from its repository)
 - webview2-com-macros 0.8.1 (crate, MIT) https://github.com/wravery/webview2-rs (the package ships no license file; the text is from its repository)
@@ -19595,7 +19618,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 334 of 351
+License text 335 of 352
 Used by:
 - weezl 0.1.12 (crate, MIT OR Apache-2.0) https://github.com/image-rs/weezl
 
@@ -19623,7 +19646,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 335 of 351
+License text 336 of 352
 Used by:
 - window-vibrancy 0.8.1 (crate, Apache-2.0 OR MIT) https://github.com/tauri-apps/tauri-plugin-vibrancy
 
@@ -19651,7 +19674,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 336 of 351
+License text 337 of 352
 Used by:
 - window-vibrancy 0.8.1 (crate, Apache-2.0 OR MIT) https://github.com/tauri-apps/tauri-plugin-vibrancy
 
@@ -19677,7 +19700,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/window-vibrancy.git
 Creator: Person: Daniel Thompson-Yvetot
 
 
-License text 337 of 351
+License text 338 of 352
 Used by:
 - windows 0.62.2 (crate, MIT OR Apache-2.0) https://github.com/microsoft/windows-rs
 - windows-collections 0.3.2 (crate, MIT OR Apache-2.0) https://github.com/microsoft/windows-rs
@@ -19897,7 +19920,7 @@ Used by:
    limitations under the License.
 
 
-License text 338 of 351
+License text 339 of 352
 Used by:
 - wnaf 0.14.1 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/elliptic-curves
 
@@ -19930,7 +19953,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 339 of 351
+License text 340 of 352
 Used by:
 - wry 0.57.0 (crate, Apache-2.0 OR MIT) https://github.com/tauri-apps/wry
 
@@ -19958,7 +19981,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 340 of 351
+License text 341 of 352
 Used by:
 - wry 0.57.0 (crate, Apache-2.0 OR MIT) https://github.com/tauri-apps/wry
 
@@ -19985,7 +20008,7 @@ PackageDownloadLocation: git+ssh://github.com/tauri-apps/wry.git
 Creator: Person: Daniel Thompson-Yvetot
 
 
-License text 341 of 351
+License text 342 of 352
 Used by:
 - xml-no-std 0.8.26 (crate, MIT) https://github.com/6d7a/xml-no-std
 
@@ -20013,7 +20036,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 342 of 351
+License text 343 of 352
 Used by:
 - y4m 0.8.0 (crate, MIT) https://github.com/image-rs/y4m
 
@@ -20042,7 +20065,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 343 of 351
+License text 344 of 352
 Used by:
 - yasna 0.6.0 (crate, MIT OR Apache-2.0) https://github.com/qnighy/yasna.rs
 
@@ -20056,7 +20079,7 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-License text 344 of 351
+License text 345 of 352
 Used by:
 - zerocopy 0.8.59 (crate, BSD-2-Clause OR Apache-2.0 OR MIT) https://github.com/google/zerocopy
 - zerocopy-derive 0.8.59 (crate, BSD-2-Clause OR Apache-2.0 OR MIT) https://github.com/google/zerocopy
@@ -20265,7 +20288,7 @@ Used by:
    limitations under the License.
 
 
-License text 345 of 351
+License text 346 of 352
 Used by:
 - zerocopy 0.8.59 (crate, BSD-2-Clause OR Apache-2.0 OR MIT) https://github.com/google/zerocopy
 - zerocopy-derive 0.8.59 (crate, BSD-2-Clause OR Apache-2.0 OR MIT) https://github.com/google/zerocopy
@@ -20297,7 +20320,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-License text 346 of 351
+License text 347 of 352
 Used by:
 - zerocopy 0.8.59 (crate, BSD-2-Clause OR Apache-2.0 OR MIT) https://github.com/google/zerocopy
 - zerocopy-derive 0.8.59 (crate, BSD-2-Clause OR Apache-2.0 OR MIT) https://github.com/google/zerocopy
@@ -20330,7 +20353,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 347 of 351
+License text 348 of 352
 Used by:
 - zeroize 1.9.0 (crate, Apache-2.0 OR MIT) https://github.com/RustCrypto/utils
 
@@ -20362,7 +20385,7 @@ IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
 
-License text 348 of 351
+License text 349 of 352
 Used by:
 - zlib-rs 0.6.8 (crate, Zlib) https://github.com/trifectatechfoundation/zlib-rs
 
@@ -20388,7 +20411,7 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 
 
-License text 349 of 351
+License text 350 of 352
 Used by:
 - zune-core 0.5.3 (crate, MIT OR Apache-2.0 OR Zlib) https://github.com/etemesi254/zune-image
 - zune-inflate 0.2.54 (crate, MIT OR Apache-2.0 OR Zlib) https://github.com/etemesi254/zune-image/tree/main/zune-inflate (the package ships no license file; the text is from its repository)
@@ -20418,7 +20441,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-License text 350 of 351
+License text 351 of 352
 Used by:
 - zune-core 0.5.3 (crate, MIT OR Apache-2.0 OR Zlib) https://github.com/etemesi254/zune-image
 - zune-jpeg 0.5.15 (crate, MIT OR Apache-2.0 OR Zlib) https://github.com/etemesi254/zune-image/tree/dev/crates/zune-jpeg
@@ -20445,7 +20468,7 @@ freely, subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 
 
-License text 351 of 351
+License text 352 of 352
 Used by:
 - zustand 4.5.7 (npm, MIT) https://github.com/pmndrs/zustand
 - zustand 5.0.15 (npm, MIT) https://github.com/pmndrs/zustand

@@ -11,7 +11,7 @@ use crate::engine::{
     GraphJob, ProgressFn, StatusSink,
 };
 use crate::sync::{LockExt, RwLockExt};
-use crate::types::{ComfyRef, GenerationMode};
+use crate::types::{ComfyRef, ComfyuiPackage, ComfyuiPackageChoice, GenerationMode};
 use base64::Engine as _;
 use futures_util::StreamExt;
 use serde_json::{json, Value};
@@ -156,7 +156,8 @@ pub struct ComfyEngine {
     pub(super) process: Option<ComfyProcess>,
     start_timeout: Duration,
     pub(super) start_lock: tokio::sync::Mutex<()>,
-    /// Where to download ComfyUI to (install root) and which package, when novira manages its own copy.
+    /// Where to download ComfyUI to (install root) and the settings' `comfyuiPackage` (`auto` included, read by
+    /// `packages_for`), when novira manages its own copy.
     pub(super) installer: Option<(PathBuf, String)>,
     status: Mutex<EngineStatus>,
     sink: RwLock<Option<StatusSink>>,
@@ -167,6 +168,26 @@ pub struct ComfyEngine {
 
 fn failed(e: impl std::fmt::Display) -> EngineError {
     EngineError::Failed(e.to_string())
+}
+
+/// What the settings' `comfyuiPackage` installs: (the package to install, the package an install without a record came
+/// from). `auto` reads this PC's graphics cards, once per run, on a blocking thread. A name the app does not know is
+/// passed on as it is, and the install refuses it.
+pub(super) async fn packages_for(choice: &str) -> (String, &'static str) {
+    let Some(known) = ComfyuiPackageChoice::from_name(choice) else {
+        return (choice.to_string(), ComfyuiPackage::Nvidia.name());
+    };
+    let auto = if known == ComfyuiPackageChoice::Auto {
+        tokio::task::spawn_blocking(crate::hardware::auto_package)
+            .await
+            .unwrap_or(ComfyuiPackage::Nvidia)
+    } else {
+        ComfyuiPackage::Nvidia
+    };
+    (
+        known.resolve(auto).name().to_string(),
+        known.unrecorded().name(),
+    )
 }
 
 impl ComfyEngine {
@@ -200,7 +221,7 @@ impl ComfyEngine {
         })
     }
 
-    /// Download ComfyUI into `root` when `main.py` is missing (the package name comes from the settings).
+    /// Download ComfyUI into `root` when `main.py` is missing (the package is the settings' `comfyuiPackage`).
     pub fn with_installer(mut self, root: PathBuf, package: String) -> Self {
         self.installer = Some((root, package));
         self
@@ -279,12 +300,14 @@ impl ComfyEngine {
                 return Ok(());
             }
             let mut changed = false;
-            if let Some((root, package)) = &self.installer {
+            if let Some((root, choice)) = &self.installer {
+                let (package, unrecorded) = packages_for(choice).await;
                 if !install::is_installed(root) {
-                    install::install(&self.http, root, package, cancel, &|s| self.set_status(s))
+                    install::install(&self.http, root, &package, cancel, &|s| self.set_status(s))
                         .await?;
                 } else if !self.switching_package.load(Ordering::SeqCst) {
-                    changed = install::package_changed(root, package).map_err(failed)?;
+                    changed =
+                        install::package_changed(root, unrecorded, &package).map_err(failed)?;
                 }
             }
             changed
@@ -1271,6 +1294,22 @@ impl ComfyEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // tags: equivalence, error-guessing
+    #[tokio::test]
+    async fn the_settings_choice_gives_the_package_to_install_and_the_one_of_an_unrecorded_install()
+    {
+        let auto = crate::hardware::auto_package().name();
+        assert_eq!(packages_for("auto").await, (auto.to_string(), "nvidia"));
+        assert_eq!(
+            packages_for("nvidia").await,
+            ("nvidia".to_string(), "nvidia")
+        );
+        assert_eq!(packages_for("amd").await, ("amd".to_string(), "amd"));
+        // An unknown name goes on to the installer, which refuses it.
+        assert_eq!(packages_for("intel").await, ("intel".to_string(), "nvidia"));
+        assert_eq!(packages_for("").await, (String::new(), "nvidia"));
+    }
 
     // tags: condition
     #[test]

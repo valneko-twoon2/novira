@@ -257,7 +257,7 @@ pub static TOOLS: &[ToolDef] = &[
     },
     ToolDef {
         name: "get_engine_info",
-        description: "Where the engine (ComfyUI) is and whether it runs: how novira reaches it (its own install, the user's own ComfyUI folder, or an address), the full path of its folder, of its output folder (where save nodes of a workflow write files, in subfolders by their prefix) and of novira's data folder, and the engine's state. Use it when the user asks where something is on the PC; give the full path. Pictures that reach the gallery are in novira, not in this folder.",
+        description: "Where the engine (ComfyUI) is and whether it runs: how novira reaches it (its own install, the user's own ComfyUI folder, or an address), the full path of its folder, of its output folder (where save nodes of a workflow write files, in subfolders by their prefix) and of novira's data folder, the engine's state, and for novira's own install which ComfyUI build it is (`gpuBuild`: for `nvidia` or `amd` GPUs, and the setting that picks it, `auto` following the PC's graphics cards; the user changes it in Settings, Engine). Use it when the user asks where something is on the PC; give the full path. Pictures that reach the gallery are in novira, not in this folder.",
         read_only: true,
         schema: empty,
     },

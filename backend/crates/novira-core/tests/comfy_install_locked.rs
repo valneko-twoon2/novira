@@ -3,7 +3,9 @@
 //! a new version whose start is cancelled, and one whose old package cannot be put back. A fake `7zr.exe` stands in for
 //! the unpacker. Windows only, like the install itself.
 #![cfg(windows)]
-use novira_core::comfy::install::{comfyui_dir, install_version, previous_dir, PORTABLE_DIR};
+use novira_core::comfy::install::{
+    archive_name, comfyui_dir, install_version, previous_dir, PORTABLE_DIR,
+};
 use novira_core::comfy::process::{ComfyProcess, OwnedProcessConfig};
 use novira_core::comfy::ComfyEngine;
 use novira_core::engine::{Engine, EngineError, EngineStatus};
@@ -58,7 +60,9 @@ fn root_with_old_package(extensions_folder: bool) -> tempfile::TempDir {
     std::fs::copy(fake_tool(), root.path().join(".tools").join("7zr.exe")).unwrap();
     std::fs::create_dir_all(root.path().join(".downloads")).unwrap();
     std::fs::write(
-        root.path().join(".downloads").join("comfyui-v0.4.0.7z"),
+        root.path()
+            .join(".downloads")
+            .join(archive_name("nvidia", Some("v0.4.0"))),
         "ok",
     )
     .unwrap();

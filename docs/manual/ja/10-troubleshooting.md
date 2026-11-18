@@ -42,7 +42,17 @@ novira は、画像などを作るために「画像生成エンジン」（Comf
 4. セキュリティソフトが新しいファイルを調べていて、展開が止まることがあります。アプリは何度か自動でやり直しますが、続くときは、データフォルダ（下を参照）を対象から外すか、一時的に止めてみてください。
 5. 理由に「see logs/comfyui.log」と出ていたら、エンジンのログに詳しい理由があります（[ログの見方](#ログの見方)）。
 
-> エンジンは Windows 用の ComfyUI で、既定では NVIDIA の GPU 用のものをインストールします。AMD の GPU や、自分でインストールした ComfyUI を使う設定もありますが、これは上級者向けです（[上級者向け](#上級者向けの設定)）。
+> エンジンは Windows 用の ComfyUI で、この PC の GPU に合わせて、NVIDIA の GPU 用か AMD の GPU 用のものをインストールします。自分でインストールした ComfyUI を使う設定もありますが、これは上級者向けです（[上級者向け](#上級者向けの設定)）。
+
+### AMD の GPU でエンジンが起動しない
+
+AMD の GPU では、ComfyUI の AMD 用のもの（ROCm という仕組みで GPU を使います）を使います。動くのは、ComfyUI が対応する Radeon です。[ComfyUI の案内](https://github.com/comfyanonymous/ComfyUI)では、Radeon RX 6000 シリーズ以降や Ryzen AI Max などが挙がっています。
+
+試すこと：
+
+1. AMD のグラフィックスドライバーを最新にします。ComfyUI の AMD 用のものは、新しいドライバーが要ります。
+2. **{{ui:settings.title}}** の **{{ui:settings.tab.engine}}** で、**{{ui:settings.engine.package.label}}** が AMD の GPU 向けになっているか確かめます。NVIDIA と AMD の両方の GPU がある PC や、NVIDIA の GPU から AMD の GPU に替えて NVIDIA のドライバーが残っている PC では、自動では NVIDIA の GPU 向けになるので、**{{ui:settings.engine.package.amd}}** を選びます。
+3. それでも起動しないときは、エンジンのログ（`comfyui.log`）に理由が残ります（[ログの見方](#ログの見方)）。
 
 ### エンジンが途中で止まったように見える
 
@@ -234,7 +244,7 @@ novira には、バックアップを作る機能と、バックアップから�
 
 | 設定名 | 内容 |
 |---|---|
-| `comfyuiPackage` | インストールするエンジンの種類。`nvidia`（既定）か `amd` |
+| `comfyuiPackage` | インストールするエンジンの種類。`auto`（既定。この PC の GPU に合わせる）、`nvidia`、`amd` のどれか |
 | `comfyuiUrl` | すでに動いている ComfyUI につなぐ（アプリはエンジンをインストールせず、起動もしません） |
 | `comfyuiDir` | 自分でインストールした ComfyUI のフォルダを使う |
 | `modelRoots` | モデルを探すフォルダを足す |

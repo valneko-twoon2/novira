@@ -217,6 +217,7 @@ pub fn engine_settings(v: &Value) {
         comfyui_root: get(v, "comfyuiRoot"),
         comfyui_output_dir: get(v, "comfyuiOutputDir"),
         comfyui_package: get(v, "comfyuiPackage"),
+        auto_comfyui_package: get(v, "autoComfyuiPackage"),
         comfyui_installed: get(v, "comfyuiInstalled"),
         installed_comfyui_package: get(v, "installedComfyuiPackage"),
         comfyui_start_timeout_secs: get(v, "comfyuiStartTimeoutSecs"),

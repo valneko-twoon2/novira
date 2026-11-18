@@ -250,7 +250,6 @@
   "settings.engine.comfyui.owned": "应用安装的引擎",
   "settings.engine.comfyui.otherHelp": "使用设置文件中指定的 ComfyUI。无法在此更改。",
   "settings.engine.package.label": "ComfyUI 安装包",
-  "settings.engine.package.help": "下次下载 ComfyUI（首次安装或更换版本）时，或将已安装的 ComfyUI 改为其他类型时使用的类型。",
   "settings.engine.package.nvidia": "适用于 NVIDIA GPU",
   "settings.engine.package.amd": "适用于 AMD GPU",
   "settings.engine.timeout.label": "等待启动的秒数",

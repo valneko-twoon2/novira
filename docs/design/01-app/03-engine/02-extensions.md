@@ -37,11 +37,11 @@ covers:
 
 ### ComfyUI 本体
 
-- Windows のみ。novira 自前の ComfyUI が無いときは、ComfyUI が初めて必要になったときにインストールする。起動時にバックグラウンドで（`prepare_engine`）、ジョブや拡張機能の要求の前にも。パッケージは `comfyuiPackage`（既定は `nvidia`、または `amd`）が指す公式のポータブルリリースで、`github.com/comfyanonymous/ComfyUI/releases/latest/download/` から取る。7-Zip のコンソールツール `7zr.exe` は `www.7-zip.org` から 1 回だけ、インストール先の `.tools` フォルダに取得する。
-- アーカイブは `.part` の名前でダウンロードし、完成したら名前を変えて、`.unpacking` フォルダに展開し、`portable` フォルダを所定の場所に移す。展開に失敗しても、完成したアーカイブは残す。ただし 7-Zip が壊れていると報告したときは削除して取り直す。各移動は、Windows がアクセスを拒む間（ウイルス対策が新しいファイルを握る）、1 秒おきに最大 60 回試す。
+- Windows のみ。novira 自前の ComfyUI が無いときは、ComfyUI が初めて必要になったときにインストールする。起動時にバックグラウンドで（`prepare_engine`）、ジョブや拡張機能の要求の前にも。パッケージは `comfyuiPackage` が指す公式のポータブルリリース（NVIDIA 用か AMD 用。[03-gpu-package.md](03-gpu-package.md)）で、`github.com/comfyanonymous/ComfyUI/releases/latest/download/` から取る。7-Zip のコンソールツール `7zr.exe` は `www.7-zip.org` から 1 回だけ、インストール先の `.tools` フォルダに取得する。
+- アーカイブは種類と版を名前に持ち（[03-gpu-package.md](03-gpu-package.md)）、`.part` の名前でダウンロードし、完成したら名前を変えて、`.unpacking` フォルダに展開し、`portable` フォルダを所定の場所に移す。展開に失敗しても、完成したアーカイブは残す。ただし 7-Zip が壊れていると報告したときは削除して取り直す。各移動は、Windows がアクセスを拒む間（ウイルス対策が新しいファイルを握る）、1 秒おきに最大 60 回試す。
 - 進捗は `engine_status` で報告する: `downloading`（バイト数つき）、`extracting`、`starting`、`ready`、`error`。
-- インストール元のパッケージは `portable/novira-package.txt` に書く。この記録が無いインストールは、最初に必要になったとき、設定が指すパッケージのものとみなす（`adopt_package`）。
-- パッケージの変更: 記録が設定と別のパッケージを指しているとき、次の起動（ComfyUI が初めて必要になったとき）に、設定のパッケージから同じ ComfyUI バージョンを下で述べる切り替えでインストールし、そのあと起動する。新しいパッケージが起動しないときは古いものを戻す。設定は変更を保存する前に確認を求める（[01-settings-engine.md](01-settings-engine.md) を参照）。
+- インストール元のパッケージは `portable/novira-package.txt` に書く。記録の無いインストールは、最初に必要になったときに記録する（`adopt_package`。どの種類とみなすかは [03-gpu-package.md](03-gpu-package.md)）。
+- パッケージの変更: 記録が設定の指す種類と別のとき、次の起動（ComfyUI が初めて必要になったとき）に、設定のパッケージから同じ ComfyUI バージョンを下で述べる切り替えでインストールし、そのあと起動する。新しいパッケージが起動しないときは古いものを戻す。設定は変更を保存する前に確認を求める（[01-settings-engine.md](01-settings-engine.md) を参照）。
 - バージョンの切り替え: `comfy_versions` は `comfyanonymous/ComfyUI` の最新 50 リリースを、ドラフト、プレリリース、プレーンなタグでない名前を除いて返す。`switch_comfy_version`（`comfy/switch.rs`）は、ジョブの進行中や拡張機能のインストール中は拒否し、novira が作ったインストールにだけ働く。ComfyUI を止め、現在の `portable` フォルダを `.previous` として残してリリースパッケージをインストールし、古い拡張機能のフォルダを新しい `custom_nodes` に移す（両方にフォルダがあるときは新しいパッケージのコピーを残す。`__pycache__` は移さない）。マーカーのある拡張機能はすべて記録したタグで入れ直し（手で置いたものは移すが入れ直さない）、ComfyUI を起動して、`.previous` を削除する（先に `.previous-discarded` に名前を変える）。入れ直しに失敗した拡張機能はフォルダ名で報告し、切り替えは取り消さない。ComfyUI が起動しないときや切り替えがキャンセルされたときは、拡張機能のフォルダを `.previous` に戻し、それを元に戻し、古いバージョンを起動して、エラーでそう伝える。`.previous` が残っている起動（切り替えが途中で切れたもの）は、エンジンを起動する前に同じ方法で戻す（`install::recover_switch`）。
 - 拡張機能の Python の手順（展開、pip、`install.py`）は、データフォルダの `cache` フォルダの下にキャッシュ（`PIP_CACHE_DIR`、`HF_HOME`、`TORCH_HOME`、`TEMP`、`TMP`）を置き、コンソールウィンドウなしで動かす（`node_packs.rs` の `confine`）。
 

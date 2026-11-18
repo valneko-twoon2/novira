@@ -3,6 +3,8 @@
 import { MOCK_REGISTRY } from './registryData';
 import type {
   BackendEvent,
+  ComfyuiPackage,
+  ComfyuiPackageChoice,
   EngineSettings,
   EngineSettingsPatch,
   LowMemoryMode,
@@ -17,7 +19,12 @@ const LATENCY = 60;
 
 /** The engine settings the mock can change, and what it "started" with (the backend's defaults). */
 type EngineSettingsValues = Pick<EngineSettings, 'comfyuiPackage' | 'comfyuiStartTimeoutSecs' | 'modelRoots' | 'civitaiLookup' | 'comfyuiInstallDir'>;
-const MOCK_ENGINE_START = { comfyuiPackage: 'nvidia', comfyuiStartTimeoutSecs: 180, civitaiLookup: false } as const;
+const MOCK_ENGINE_START = { comfyuiPackage: 'auto', comfyuiStartTimeoutSecs: 180, civitaiLookup: false } as const;
+/** The package `auto` stands for on the pretend PC (its graphics card is NVIDIA's). */
+const MOCK_AUTO_PACKAGE: ComfyuiPackage = 'nvidia';
+const PACKAGE_CHOICES: readonly ComfyuiPackageChoice[] = ['auto', 'nvidia', 'amd'];
+/** The package a choice installs, as the backend resolves it. */
+const resolvePackage = (choice: ComfyuiPackageChoice): ComfyuiPackage => (choice === 'auto' ? MOCK_AUTO_PACKAGE : choice);
 const MOCK_MAX_MODEL_ROOTS = 16;
 
 /** What the engine needs from the mock around it. */
@@ -175,7 +182,7 @@ export class MockEngine {
   private engineState(): EngineSettings {
     const saved = this.engineSaved;
     const restartNeeded =
-      saved.comfyuiPackage !== MOCK_ENGINE_START.comfyuiPackage ||
+      resolvePackage(saved.comfyuiPackage) !== resolvePackage(MOCK_ENGINE_START.comfyuiPackage) ||
       saved.comfyuiStartTimeoutSecs !== MOCK_ENGINE_START.comfyuiStartTimeoutSecs ||
       saved.civitaiLookup !== MOCK_ENGINE_START.civitaiLookup ||
       saved.modelRoots.length > 0 ||
@@ -195,7 +202,8 @@ export class MockEngine {
       // The pretend install is the starting package. Saving another one does not reinstall it here; the backend does
       // that at the next start, so the install keeps the package it came from.
       comfyuiInstalled: true,
-      installedComfyuiPackage: MOCK_ENGINE_START.comfyuiPackage,
+      installedComfyuiPackage: resolvePackage(MOCK_ENGINE_START.comfyuiPackage),
+      autoComfyuiPackage: MOCK_AUTO_PACKAGE,
       ...structuredClone(saved),
       restartNeeded,
     };
@@ -210,8 +218,8 @@ export class MockEngine {
     await wait(LATENCY);
     const { comfyuiPackage, comfyuiStartTimeoutSecs, civitaiLookup, ...rest } = patch;
     if (Object.keys(rest).length > 0) throw new Error(`unknown field: ${Object.keys(rest).join(', ')}`);
-    if (comfyuiPackage !== undefined && comfyuiPackage !== 'nvidia' && comfyuiPackage !== 'amd') {
-      throw new Error('The ComfyUI package must be "nvidia" or "amd"');
+    if (comfyuiPackage !== undefined && !PACKAGE_CHOICES.includes(comfyuiPackage)) {
+      throw new Error('The ComfyUI package must be "auto", "nvidia" or "amd"');
     }
     if (
       comfyuiStartTimeoutSecs !== undefined &&

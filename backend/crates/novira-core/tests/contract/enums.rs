@@ -121,6 +121,7 @@ pub fn enums(v: &Value) {
         check_enum!(v, AgentToolsState, [Unknown, Supported, Unsupported]),
         check_enum!(v, ComfyuiMode, [Owned, Url, Folder]),
         check_enum!(v, ComfyuiPackage, [Nvidia, Amd]),
+        check_enum!(v, ComfyuiPackageChoice, [Auto, Nvidia, Amd]),
     ];
     checked.sort();
     assert_eq!(keys(v), checked, "every enum in the fixture is checked");

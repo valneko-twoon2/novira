@@ -27,7 +27,7 @@ covers:
 **ファイル。** `settings.json` はデータフォルダにある（[01-runtime.md](../01-core/01-runtime.md) を参照）。`backend/crates/novira-core/src/settings.rs` の `Settings` が読む。無いキーは既定値になり、未知のキーは無視され、壊れたファイルは理由を示して起動を止める（`backend/crates/novira-core/src/startup.rs`）。`Settings::save_key` は 1 つのキーだけを置き換えて他を残し、`settings.json.tmp` 経由で書く。キーと既定値は次のとおり。
 
 - `comfyuiUrl`（未設定）は起動済みの ComfyUI につなぐ。`comfyuiDir`（未設定）は既存のローカルの ComfyUI フォルダを使う。アドレスと表示するモードは URL で決まる。両方あるときは、何も応答しなければそのフォルダの ComfyUI をそのアドレスで起動する。アドレスはこの PC のものでなければならない（[01-generation.md](../../02-generation/01-pictures/01-generation.md) を参照）。どちらも無ければ、アプリ自身のコピーを動かす。
-- `comfyuiPackage` は `nvidia` か `amd`。`comfyuiPython`（未設定）と `comfyuiArgs`（`[]`）は、novira が起動する ComfyUI のプロセスに渡す。
+- `comfyuiPackage` は `auto`（既定）、`nvidia`、`amd`（[03-gpu-package.md](03-gpu-package.md)）。`comfyuiPython`（未設定）と `comfyuiArgs`（`[]`）は、novira が起動する ComfyUI のプロセスに渡す。
 - `modelRoots`（`[]`）は追加のモデルフォルダで、最大 16。中にあるモデルパックも読む（[02-model-packs.md](../../02-generation/03-models/02-model-packs.md) を参照）。
 - `gpuLock` は `auto`（変数 `NOVIRA_GPU_LOCK`。未設定ならロックなし）、フォルダのパス、`""`（オフ）のいずれか。
 - `comfyuiStartTimeoutSecs` は 180。許可範囲は 30 から 1800。
@@ -37,7 +37,7 @@ covers:
 
 **設定: エンジン**（`frontend/src/features/settings/EnginePane.tsx`）。表示するのは、データフォルダ、自前の ComfyUI の場所（`comfyuiRoot`）、ComfyUI のモード（URL かフォルダ）。`comfyuiPython`・`comfyuiArgs`・`gpuLock` は表示しない。変えられるのは次の 5 つ（検査はバックエンド）。
 
-- ComfyUI のパッケージ（インストール済みで異なるときは、画面が先に確認する）
+- ComfyUI のパッケージ（[03-gpu-package.md](03-gpu-package.md)）
 - 起動のタイムアウト（スライダー。30 から 1800 秒を 10 刻み、操作が止まって 500 ms 後に保存）
 - Civitai 照会のスイッチ
 - 追加のモデルフォルダ（フォルダダイアログで追加し、行ごとに削除）
@@ -46,8 +46,6 @@ covers:
 起動時と異なる変更は `restartNeeded` を立て、画面が次の起動で適用されると伝える。モデルフォルダは起動時にだけ読む。
 
 **エンジンのコマンド。** `engine_settings` は `EngineSettings`（`backend/crates/novira-core/src/types.rs`）を返す。`set_engine_settings` は `EngineSettingsPatch` を受け取り、何かを書く前にすべての値を検査する（`backend/crates/novira-core/src/service/engine_settings.rs`）。`add_model_root` はシェルのダイアログからフォルダを受け取り、キャンセルされたら `null` を返す。`remove_model_root` は添字を受け取る。ダイアログのないブラウザサーバーでは、「フォルダを追加」とバックアップのボタンは、デスクトップアプリが要るという注記になる（`hasNativeDialogs`）。フォルダの削除は引き続きできる。
-
-**パッケージの変更。** `comfyuiPackage` が変わった次の起動で、別のパッケージのインストールは、保存されたパッケージの同じ ComfyUI バージョンに置き換わり、拡張機能も入れ直される。起動しないときは古いものに戻る（`backend/crates/novira-core/src/comfy/client.rs`）。詳細は [02-extensions.md](02-extensions.md)。
 
 **低メモリモード**（`backend/crates/novira-core/src/service/memory.rs`、`backend/crates/novira-core/src/comfy/process.rs`）。スイッチは設定: 生成にある（`low_memory_mode`、`set_low_memory_mode`）。変更すると `lowMemoryMode` を保存する。novira の ComfyUI が動いていてジョブが進行中でなければ、`--novram` で再起動する。これは `comfyuiArgs` の VRAM フラグを置き換える（`--cpu` のときは使わない）。それ以外は次の起動で適用する。novira が ComfyUI を起動しないとき（`comfyuiUrl` だけ設定されているとき）は、設定を保存するだけで効果はなく、画面がそう伝える。メモリ不足で失敗したあとは、トーストがこのスイッチを勧める（`frontend/src/state/outOfMemory.ts`）。
 
@@ -71,7 +69,7 @@ covers:
 
 | 境界 | ガード |
 |---|---|
-| エンジン設定（`engine_settings`、`set_engine_settings`、`add_model_root`、`remove_model_root`） | 変えられるのは、ComfyUI のパッケージ、起動のタイムアウト、Civitai 照会のスイッチ、追加のモデルフォルダだけ。`comfyuiUrl` と `comfyuiDir` は読み取り専用で表示し、Python、引数、GPU ロックは一切表示しない。パッチは未知のフィールドを拒否する。パッケージは `nvidia` か `amd`、タイムアウトは 30 から 1800 秒の整数で、何かを書く前にバックエンドで検査する（`settings::check_package`、`check_start_timeout`）。モデルフォルダは、`add_model_root` の中でシェルが開くダイアログからだけ来て（ページはパスを送らない）、再度検査する（`settings::check_new_model_root`）: 絶対パス、`..` なし、制御文字やデバイスパスなし、既存のフォルダ、まだ一覧にない（解決後、Windows では大文字小文字を区別しない）、データフォルダでもその中でもない、最大 16。`remove_model_root` は保存済みの一覧への添字だけを受け取る。変更はすべて `Settings::save_key` を通り、次の起動で適用される。パッケージを変えると、設定での確認のあと次の起動で、初回インストールと同じ公式アドレスから ComfyUI を入れ直す。 |
+| エンジン設定（`engine_settings`、`set_engine_settings`、`add_model_root`、`remove_model_root`） | 変えられるのは、ComfyUI のパッケージ、起動のタイムアウト、Civitai 照会のスイッチ、追加のモデルフォルダだけ。`comfyuiUrl` と `comfyuiDir` は読み取り専用で表示し、Python、引数、GPU ロックは一切表示しない。パッチは未知のフィールドを拒否する。パッケージは `auto`・`nvidia`・`amd`、タイムアウトは 30 から 1800 秒の整数で、何かを書く前にバックエンドで検査する（`settings::check_package`、`check_start_timeout`）。モデルフォルダは、`add_model_root` の中でシェルが開くダイアログからだけ来て（ページはパスを送らない）、再度検査する（`settings::check_new_model_root`）: 絶対パス、`..` なし、制御文字やデバイスパスなし、既存のフォルダ、まだ一覧にない（解決後、Windows では大文字小文字を区別しない）、データフォルダでもその中でもない、最大 16。`remove_model_root` は保存済みの一覧への添字だけを受け取る。変更はすべて `Settings::save_key` を通り、次の起動で適用される。パッケージを変えると、設定での確認のあと次の起動で、初回インストールと同じ公式アドレスから ComfyUI を入れ直す。 |
 | 未完了のダウンロード（`list_unfinished_downloads`、`delete_unfinished_downloads`、`unfinished.rs`） | novira のダウンロードフォルダの途中のファイル（`<name>.part` とその `.resume` の記録）だけを一覧する。対象は `comfyui/.downloads`、`comfyui/.tools`、`models/trustmark`、`models/` の下で最大 4 階層までのすべての `.downloads` フォルダ。削除は一覧が返した相対パスで項目を指定する。一覧に無いパスは無視し、データフォルダにも連結しないので、それらのフォルダの外は削除できない。ダウンロードが今書いている途中ファイルは保持して残す（`unfinished::hold`、`download_with_stall` と透かしの取得が取る）。パスは最大 1000 件、各 512 文字まで、制御文字なし（`check_picked`）。フォルダを探すときリンクはたどらない。 |
 | 利用者が選ぶファイル（共有用の書き出し、バックアップ、復元） | シェルがコマンドの中でネイティブダイアログを開く（rfd、ダイアログプラグインなし）。WebView はパスを送らず受け取らない。「フォルダを開く」は、シェルが自分の直近の書き出しから覚えているフォルダだけを開く。 |
 | バックアップ zip の復元 | すべてのエントリ名が、バックアップを構成する正確な名前のどれか（`manifest.json`、`novira.sqlite`、`ui-state.json`、`outputs/<valid name>`、`thumbnails/<valid stem>.thumb`）でなければならない。絶対パス、`..`、ドライブ文字、バックスラッシュ、シンボリックリンク、重複があれば、何かを書く前に zip 全体を拒否する。エントリはサイズ制限つきで `restore-staging/` の中だけに展開する。マニフェストのバージョンとデータベースを検査する。データの置き換えは次の起動で、ロールバックつきで行う。バックアップに `secrets/` と `settings.json` は含まれない。 |

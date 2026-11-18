@@ -4,8 +4,8 @@
 //! Windows only, like the install itself.
 #![cfg(windows)]
 use novira_core::comfy::install::{
-    comfyui_dir, install, install_version, installed_package, is_installed, package_url,
-    previous_dir, restore_previous, PORTABLE_DIR,
+    archive_name, comfyui_dir, install, install_version, installed_package, is_installed,
+    package_url, previous_dir, restore_previous, PORTABLE_DIR,
 };
 use novira_core::comfy::process::{ComfyProcess, OwnedProcessConfig};
 use novira_core::comfy::ComfyEngine;
@@ -67,13 +67,24 @@ fn fake_tool() -> &'static Path {
     })
 }
 
-/// An install root with the fake tool and an archive whose content tells the tool what to do.
+/// An install root with the fake tool and a kept archive of the NVIDIA package whose content tells the tool what to do.
 fn root_with_archive(mode: &str) -> tempfile::TempDir {
+    root_with_archive_of("nvidia", mode)
+}
+
+/// An install root with the fake tool and a kept archive of `package` (the latest release).
+fn root_with_archive_of(package: &str, mode: &str) -> tempfile::TempDir {
     let root = tempfile::tempdir().unwrap();
     std::fs::create_dir_all(root.path().join(".tools")).unwrap();
     std::fs::copy(fake_tool(), root.path().join(".tools").join("7zr.exe")).unwrap();
     std::fs::create_dir_all(root.path().join(".downloads")).unwrap();
-    std::fs::write(root.path().join(".downloads").join("comfyui.7z"), mode).unwrap();
+    std::fs::write(
+        root.path()
+            .join(".downloads")
+            .join(archive_name(package, None)),
+        mode,
+    )
+    .unwrap();
     root
 }
 
@@ -117,13 +128,17 @@ async fn the_package_is_unpacked_from_its_top_folder_and_moved_into_place() {
         .is_file());
     assert!(!root.path().join(PORTABLE_DIR).join("old.txt").exists());
     assert!(!root.path().join(".unpacking").exists());
-    assert!(!root.path().join(".downloads").join("comfyui.7z").exists());
+    assert!(!root
+        .path()
+        .join(".downloads")
+        .join(archive_name("nvidia", None))
+        .exists());
 }
 
 // tags: equivalence
 #[tokio::test]
 async fn an_archive_without_a_top_folder_works_too() {
-    let root = root_with_archive("flat");
+    let root = root_with_archive_of("amd", "flat");
     let (result, _) = run(root.path(), "amd", &CancellationToken::new()).await;
     assert_eq!(result, Ok(()));
     assert!(comfyui_dir(root.path()).join("main.py").is_file());
@@ -144,7 +159,11 @@ async fn a_failed_unpack_reports_the_tools_message_and_drops_the_archive() {
     let root = root_with_archive("fail");
     let (result, _) = run(root.path(), "nvidia", &CancellationToken::new()).await;
     assert!(matches!(result, Err(EngineError::Failed(m)) if m.contains("Headers Error")));
-    assert!(!root.path().join(".downloads").join("comfyui.7z").exists());
+    assert!(!root
+        .path()
+        .join(".downloads")
+        .join(archive_name("nvidia", None))
+        .exists());
     assert!(!root.path().join(".unpacking").exists());
 }
 
@@ -157,7 +176,11 @@ async fn a_failed_unpack_for_another_reason_keeps_the_archive_for_the_next_try()
     assert!(
         matches!(result, Err(EngineError::Failed(m)) if m.contains("Can not write output file"))
     );
-    assert!(root.path().join(".downloads").join("comfyui.7z").is_file());
+    assert!(root
+        .path()
+        .join(".downloads")
+        .join(archive_name("nvidia", None))
+        .is_file());
     assert!(!root.path().join(".unpacking").exists());
 }
 
@@ -220,7 +243,12 @@ async fn a_missing_tool_is_downloaded_first_and_a_failed_download_is_an_error() 
 #[tokio::test]
 async fn a_missing_archive_is_downloaded_after_the_tool_is_there() {
     let root = root_with_archive("nested");
-    std::fs::remove_file(root.path().join(".downloads").join("comfyui.7z")).unwrap();
+    std::fs::remove_file(
+        root.path()
+            .join(".downloads")
+            .join(archive_name("nvidia", None)),
+    )
+    .unwrap();
     let (result, _) = run(root.path(), "nvidia", &CancellationToken::new()).await;
     assert!(matches!(result, Err(EngineError::Failed(m)) if m.contains("Download failed")));
 }
@@ -228,11 +256,15 @@ async fn a_missing_archive_is_downloaded_after_the_tool_is_there() {
 /// A root with a package of an older version installed, one extension folder in it, and the archive of the release `tag`.
 fn root_with_old_package_and_release(mode: &str, tag: &str) -> tempfile::TempDir {
     let root = root_with_archive("unused");
-    let _ = std::fs::remove_file(root.path().join(".downloads").join("comfyui.7z"));
+    let _ = std::fs::remove_file(
+        root.path()
+            .join(".downloads")
+            .join(archive_name("nvidia", None)),
+    );
     std::fs::write(
         root.path()
             .join(".downloads")
-            .join(format!("comfyui-{tag}.7z")),
+            .join(archive_name("nvidia", Some(tag))),
         mode,
     )
     .unwrap();
@@ -374,4 +406,50 @@ async fn a_release_that_cannot_be_unpacked_leaves_the_old_package_alone() {
         .join("custom_nodes/my-pack/nodes.py")
         .is_file());
     assert!(!previous_dir(root.path()).exists());
+}
+
+// tags: regression, state-transition
+#[tokio::test]
+async fn an_archive_kept_from_another_package_is_not_installed_as_the_package_asked_for() {
+    // An older version kept its NVIDIA download (the default before `auto`) as `comfyui.7z` after an unpack that failed
+    // for want of room. The next start is on a PC whose automatic choice is AMD's.
+    let root = root_with_archive("unused");
+    let downloads = root.path().join(".downloads");
+    std::fs::remove_file(downloads.join(archive_name("nvidia", None))).unwrap();
+    std::fs::write(downloads.join("comfyui.7z"), "nested").unwrap();
+    std::fs::write(downloads.join("comfyui.part"), "half").unwrap();
+    let (result, _) = run(root.path(), "amd", &CancellationToken::new()).await;
+    // The AMD package has to be fetched (the client here is offline); the NVIDIA archive must not become an "amd" install.
+    assert!(
+        !(result.is_ok() && installed_package(root.path()).as_deref() == Some("amd")),
+        "the NVIDIA archive was unpacked and recorded as amd: {result:?}"
+    );
+    assert!(matches!(result, Err(EngineError::Failed(m)) if m.contains("Download failed")));
+    // What it holds is not known, so it and its partial download are gone.
+    assert!(!downloads.join("comfyui.7z").exists());
+    assert!(!downloads.join("comfyui.part").exists());
+}
+
+// tags: state-transition, condition
+#[tokio::test]
+async fn a_kept_archive_serves_its_own_package_only() {
+    // The NVIDIA package was downloaded, and its unpack failed for want of room: the archive is kept.
+    let root = root_with_archive("disk");
+    let archive = root
+        .path()
+        .join(".downloads")
+        .join(archive_name("nvidia", None));
+    let (result, _) = run(root.path(), "nvidia", &CancellationToken::new()).await;
+    assert!(result.is_err());
+    assert!(archive.is_file());
+    std::fs::write(&archive, "nested").unwrap();
+    // The AMD package is asked for next: it is downloaded (offline here), and the NVIDIA archive stays.
+    let (result, _) = run(root.path(), "amd", &CancellationToken::new()).await;
+    assert!(matches!(result, Err(EngineError::Failed(m)) if m.contains("Download failed")));
+    assert!(!is_installed(root.path()));
+    assert!(archive.is_file());
+    // The NVIDIA package again: its own archive is unpacked with no download.
+    let (result, _) = run(root.path(), "nvidia", &CancellationToken::new()).await;
+    assert_eq!(result, Ok(()));
+    assert_eq!(installed_package(root.path()).as_deref(), Some("nvidia"));
 }

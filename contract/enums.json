@@ -149,5 +149,10 @@
   "ComfyuiPackage": [
     "nvidia",
     "amd"
+  ],
+  "ComfyuiPackageChoice": [
+    "auto",
+    "nvidia",
+    "amd"
   ]
 }

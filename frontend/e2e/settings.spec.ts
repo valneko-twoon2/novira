@@ -45,6 +45,34 @@ test(
   },
 );
 
+test(
+  "the engine package starts on auto for the PC's GPU, and a package that reinstalls ComfyUI asks first",
+  { tag: ['@state-transition', '@scenario'] },
+  async ({ page }) => {
+    await openApp(page);
+    await openMenuItem(page, 'app.nav.settings');
+    await expect(page.getByTestId('settings-modal')).toBeVisible();
+    await page.getByTestId('settings-tab-engine').click();
+    // The pretend PC has an NVIDIA card, and its ComfyUI came from the NVIDIA package.
+    const pkg = page.getByRole('combobox', { name: msg('settings.engine.package.label') });
+    await expect(pkg).toHaveText(msg('settings.engine.package.autoNvidia'));
+
+    await pkg.click();
+    await page.getByRole('option', { name: msg('settings.engine.package.amd') }).click();
+    await expect(page.getByText(msg('settings.engine.package.reinstall'))).toBeVisible();
+    await page.getByTestId('settings-engine-package-confirm').click();
+    await expect(page.getByTestId('settings-engine-restart')).toBeVisible();
+    await expect(pkg).toHaveText(msg('settings.engine.package.amd'));
+
+    // Auto stands for the package the install came from: saved at once, and nothing waits for a restart any more.
+    await pkg.click();
+    await page.getByRole('option', { name: msg('settings.engine.package.autoNvidia') }).click();
+    await expect(page.getByTestId('settings-engine-package-confirm')).toHaveCount(0);
+    await expect(pkg).toHaveText(msg('settings.engine.package.autoNvidia'));
+    await expect(page.getByTestId('settings-engine-restart')).toHaveCount(0);
+  },
+);
+
 test('switching the theme applies at once and survives a reload', { tag: ['@state-transition'] }, async ({ page }) => {
   await openApp(page);
   const html = page.locator('html');

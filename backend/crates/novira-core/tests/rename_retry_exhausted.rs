@@ -7,7 +7,7 @@
 mod fake_site;
 
 use fake_site::{client, site, Route};
-use novira_core::comfy::install::install as install_comfy;
+use novira_core::comfy::install::{archive_name, install as install_comfy};
 use novira_core::comfy::node_packs::{custom_nodes_dir, install as install_pack, parse_github};
 use novira_core::engine::EngineError;
 use std::fs::OpenOptions;
@@ -71,7 +71,13 @@ async fn a_package_folder_that_cannot_be_moved_is_reported_after_the_retries() {
     std::fs::create_dir_all(root.path().join(".tools")).unwrap();
     std::fs::copy(&exe, root.path().join(".tools").join("7zr.exe")).unwrap();
     std::fs::create_dir_all(root.path().join(".downloads")).unwrap();
-    std::fs::write(root.path().join(".downloads").join("comfyui.7z"), "x").unwrap();
+    std::fs::write(
+        root.path()
+            .join(".downloads")
+            .join(archive_name("nvidia", None)),
+        "x",
+    )
+    .unwrap();
     // The unpacked program file is opened by something else as soon as it appears.
     let unpacked = root
         .path()

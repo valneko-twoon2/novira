@@ -250,7 +250,6 @@
   "settings.engine.comfyui.owned": "앱이 설치한 것",
   "settings.engine.comfyui.otherHelp": "설정 파일에 지정된 ComfyUI를 사용합니다. 여기서는 바꿀 수 없습니다.",
   "settings.engine.package.label": "ComfyUI 패키지",
-  "settings.engine.package.help": "다음에 ComfyUI를 다운로드할 때(첫 설치 또는 버전 변경), 또는 설치된 ComfyUI를 다른 종류로 바꿀 때 사용되는 종류입니다.",
   "settings.engine.package.nvidia": "NVIDIA GPU용",
   "settings.engine.package.amd": "AMD GPU용",
   "settings.engine.timeout.label": "시작 대기 시간(초)",

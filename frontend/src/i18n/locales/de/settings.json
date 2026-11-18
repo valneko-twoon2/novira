@@ -250,7 +250,6 @@
   "settings.engine.comfyui.owned": "Die von der App installierte",
   "settings.engine.comfyui.otherHelp": "Es wird das in der Einstellungsdatei genannte ComfyUI verwendet. Es lässt sich hier nicht ändern.",
   "settings.engine.package.label": "ComfyUI-Paket",
-  "settings.engine.package.help": "Die Variante, die beim nächsten Herunterladen von ComfyUI verwendet wird (erste Installation oder Versionswechsel) oder wenn das installierte ComfyUI auf eine andere Variante umgestellt wird.",
   "settings.engine.package.nvidia": "Für NVIDIA-GPUs",
   "settings.engine.package.amd": "Für AMD-GPUs",
   "settings.engine.timeout.label": "Wartezeit für den Start (Sekunden)",

@@ -26,23 +26,22 @@ impl Backend {
         let saved = Settings::load(&self.inner.data_dir).map_err(BackendError::Internal)?;
         let started = &self.inner.started_settings;
         let pending = self.pending_location();
+        let auto = crate::hardware::auto_package();
         let restart_needed = pending.is_some()
             || saved.comfyui_install_dir != started.comfyui_install_dir
-            || saved.comfyui_package != started.comfyui_package
+            || saved.package().resolve(auto) != started.package().resolve(auto)
             || saved.comfyui_start_timeout_secs != started.comfyui_start_timeout_secs
             || saved.model_roots != started.model_roots
             || saved.civitai_lookup != started.civitai_lookup;
         let root = started.install_root(&self.inner.data_dir);
         let comfyui_installed = saved.comfyui_mode() == ComfyuiMode::Owned
             && crate::comfy::install::is_installed(&root);
-        let installed_comfyui_package = comfyui_installed
-            .then(|| crate::comfy::install::installed_package(&root))
-            .flatten()
-            .and_then(|name| match name.as_str() {
-                "nvidia" => Some(ComfyuiPackage::Nvidia),
-                "amd" => Some(ComfyuiPackage::Amd),
-                _ => None,
-            });
+        let installed_comfyui_package = comfyui_installed.then(|| {
+            crate::comfy::install::installed_package(&root)
+                .as_deref()
+                .and_then(ComfyuiPackage::from_name)
+                .unwrap_or_else(|| saved.package().unrecorded())
+        });
         Ok(EngineSettings {
             data_dir: self.inner.data_dir.to_string_lossy().into_owned(),
             data_dir_changeable: self.location_pointer().is_some(),
@@ -65,6 +64,7 @@ impl Backend {
             comfyui_output_dir: output_dir(started, &root)
                 .map(|d| d.to_string_lossy().into_owned()),
             comfyui_package: saved.package(),
+            auto_comfyui_package: auto,
             comfyui_installed,
             installed_comfyui_package,
             comfyui_start_timeout_secs: saved.comfyui_start_timeout_secs,
@@ -94,7 +94,7 @@ impl Backend {
             if saved.comfyui_mode() == ComfyuiMode::Owned {
                 crate::comfy::install::adopt_package(
                     &saved.install_root(&self.inner.data_dir),
-                    &saved.comfyui_package,
+                    saved.package().unrecorded().name(),
                 )
                 .map_err(internal)?;
             }
@@ -296,7 +296,8 @@ mod tests {
         assert_eq!(s.comfyui_mode, ComfyuiMode::Owned);
         assert_eq!(s.comfyui_url, None);
         assert_eq!(s.comfyui_dir, None);
-        assert_eq!(s.comfyui_package, ComfyuiPackage::Nvidia);
+        assert_eq!(s.comfyui_package, ComfyuiPackageChoice::Auto);
+        assert_eq!(s.auto_comfyui_package, crate::hardware::auto_package());
         assert_eq!(s.comfyui_start_timeout_secs, 180);
         assert!(s.model_roots.is_empty());
         assert!(!s.restart_needed);
@@ -315,7 +316,7 @@ mod tests {
                 ..Default::default()
             })
             .unwrap();
-        assert_eq!(s.comfyui_package, ComfyuiPackage::Amd);
+        assert_eq!(s.comfyui_package, ComfyuiPackageChoice::Amd);
         assert_eq!(s.comfyui_start_timeout_secs, 600);
         assert!(s.restart_needed);
         let file = saved(&data);
@@ -325,7 +326,7 @@ mod tests {
         // Changing it back to what the app started with needs no restart.
         let s = b
             .set_engine_settings(EngineSettingsPatch {
-                comfyui_package: Some("nvidia".into()),
+                comfyui_package: Some("auto".into()),
                 comfyui_start_timeout_secs: Some(180),
                 ..Default::default()
             })
@@ -645,13 +646,67 @@ mod tests {
         assert_eq!(s.installed_comfyui_package, Some(ComfyuiPackage::Amd));
     }
 
+    // tags: decision-table
+    #[test]
+    fn naming_the_package_auto_stands_for_needs_no_restart_and_the_other_one_does() {
+        let base = tempfile::tempdir().unwrap();
+        let data = base.path().join("novira-data");
+        let b = open(&data, quiet());
+        let auto = crate::hardware::auto_package();
+        let other = match auto {
+            ComfyuiPackage::Nvidia => ComfyuiPackage::Amd,
+            ComfyuiPackage::Amd => ComfyuiPackage::Nvidia,
+        };
+        let set = |name: &str| {
+            b.set_engine_settings(EngineSettingsPatch {
+                comfyui_package: Some(name.into()),
+                ..Default::default()
+            })
+            .unwrap()
+        };
+        let s = set(auto.name());
+        assert_eq!(
+            s.comfyui_package,
+            ComfyuiPackageChoice::from_name(auto.name()).unwrap()
+        );
+        assert!(!s.restart_needed, "the same package as at start");
+        assert!(set(other.name()).restart_needed);
+        assert!(!set("auto").restart_needed);
+        assert_eq!(saved(&data)["comfyuiPackage"], "auto");
+    }
+
+    // tags: condition
+    #[test]
+    fn an_install_without_a_record_shows_as_the_package_it_came_from() {
+        let base = tempfile::tempdir().unwrap();
+        let data = base.path().join("novira-data");
+        let b = open(&data, quiet());
+        fake_install(&data);
+        // Before the choice was automatic, an install with no record came from the NVIDIA package...
+        assert_eq!(
+            b.engine_settings().unwrap().installed_comfyui_package,
+            Some(ComfyuiPackage::Nvidia)
+        );
+        // ...unless AMD's was chosen. Only reading the settings writes no record.
+        Settings::save_key(&data, "comfyuiPackage", serde_json::json!("amd")).unwrap();
+        assert_eq!(
+            b.engine_settings().unwrap().installed_comfyui_package,
+            Some(ComfyuiPackage::Amd)
+        );
+        assert_eq!(
+            crate::comfy::install::installed_package(&data.join("comfyui")),
+            None
+        );
+    }
+
     // tags: state-transition
     #[test]
     fn a_package_change_first_records_an_install_that_has_no_record() {
         let base = tempfile::tempdir().unwrap();
         let data = base.path().join("novira-data");
         let b = open(&data, quiet());
-        // The default package is nvidia, and this install has no record (it was made before the record existed).
+        // The default choice is auto, and this install has no record (it was made before the record existed, when the
+        // default was nvidia).
         fake_install(&data);
         let s = b
             .set_engine_settings(EngineSettingsPatch {
@@ -659,7 +714,7 @@ mod tests {
                 ..Default::default()
             })
             .unwrap();
-        assert_eq!(s.comfyui_package, ComfyuiPackage::Amd);
+        assert_eq!(s.comfyui_package, ComfyuiPackageChoice::Amd);
         assert_eq!(s.installed_comfyui_package, Some(ComfyuiPackage::Nvidia));
         assert!(s.restart_needed);
         assert_eq!(

@@ -259,7 +259,7 @@
   "settings.engine.comfyui.ownedHelp": "The ComfyUI that the app installed, which the app starts. A new place gets its own install from the next start; the files at the old place are not removed.",
   "settings.engine.comfyui.otherHelp": "The ComfyUI named in the settings file is used. It cannot be changed here.",
   "settings.engine.package.label": "ComfyUI package",
-  "settings.engine.package.help": "The kind used the next time ComfyUI is downloaded (the first install or a change of version), or when the installed ComfyUI is changed to another kind.",
+  "settings.engine.package.help": "The kind used the next time ComfyUI is downloaded (the first install or a change of version), or when the installed ComfyUI is changed to another kind. Auto picks the one that fits this PC's GPU.",
   "settings.engine.package.nvidia": "For NVIDIA GPUs",
   "settings.engine.package.amd": "For AMD GPUs",
   "settings.engine.timeout.label": "Seconds to wait for the start",
@@ -329,5 +329,7 @@
   "settings.section.models": "Models",
   "settings.assistantTrial.label": "Assistant's trial pictures",
   "settings.assistantTrial.help": "Whether the assistant may generate one trial picture on its own when a request is unclear, look at it, and ask whether that is what you mean. Generating takes time. Looking at the picture follows the \"Reading pictures and prompts\" setting.",
-  "settings.tab.text": "Text"
+  "settings.tab.text": "Text",
+  "settings.engine.package.autoNvidia": "Auto (for NVIDIA GPUs)",
+  "settings.engine.package.autoAmd": "Auto (for AMD GPUs)"
 }

@@ -135,17 +135,29 @@ describe('runs and the queue', { tags: [] }, () => {
 
 describe('where the engine is', { tags: [] }, () => {
   const settings = (patch: Partial<EngineSettings>) =>
-    ({ dataDir: 'C:\\novira-data', comfyuiRoot: 'C:\\novira-data\\comfyui', comfyuiMode: 'owned', comfyuiDir: null, comfyuiUrl: null, comfyuiOutputDir: 'C:\\novira-data\\comfyui\\portable\\ComfyUI\\output', ...patch }) as EngineSettings;
+    ({ dataDir: 'C:\\novira-data', comfyuiRoot: 'C:\\novira-data\\comfyui', comfyuiMode: 'owned', comfyuiDir: null, comfyuiUrl: null, comfyuiOutputDir: 'C:\\novira-data\\comfyui\\portable\\ComfyUI\\output', comfyuiPackage: 'auto', autoComfyuiPackage: 'amd', installedComfyuiPackage: 'amd', ...patch }) as EngineSettings;
 
   it('gives the full paths of the install, its output and the data folder, by how novira reaches ComfyUI', { tags: ['equivalence'] }, async () => {
     useEngine.setState({ status: { state: 'ready' } });
     vi.spyOn(backend, 'engineSettings').mockResolvedValueOnce(settings({}));
     expect(await call('get_engine_info')).toEqual({
       ok: true,
-      content: { engine: 'novira installs and runs its own ComfyUI', state: 'ready', installFolder: 'C:\\novira-data\\comfyui', outputFolder: 'C:\\novira-data\\comfyui\\portable\\ComfyUI\\output', dataFolder: 'C:\\novira-data' },
+      content: {
+        engine: 'novira installs and runs its own ComfyUI',
+        state: 'ready',
+        installFolder: 'C:\\novira-data\\comfyui',
+        gpuBuild: { installed: 'amd', setting: 'auto (amd on this PC, from its graphics cards)' },
+        outputFolder: 'C:\\novira-data\\comfyui\\portable\\ComfyUI\\output',
+        dataFolder: 'C:\\novira-data',
+      },
     });
+    vi.spyOn(backend, 'engineSettings').mockResolvedValueOnce(settings({ comfyuiPackage: 'nvidia', installedComfyuiPackage: null }));
+    expect(await call('get_engine_info')).toMatchObject({ content: { gpuBuild: { installed: 'not installed yet', setting: 'nvidia' } } });
     vi.spyOn(backend, 'engineSettings').mockResolvedValueOnce(settings({ comfyuiMode: 'folder', comfyuiDir: 'D:\\ComfyUI', comfyuiOutputDir: 'D:\\ComfyUI\\output' }));
-    expect(await call('get_engine_info')).toMatchObject({ content: { comfyuiFolder: 'D:\\ComfyUI', outputFolder: 'D:\\ComfyUI\\output' } });
+    const folder = await call('get_engine_info');
+    expect(folder).toMatchObject({ content: { comfyuiFolder: 'D:\\ComfyUI', outputFolder: 'D:\\ComfyUI\\output' } });
+    // The build belongs to novira's own install: a folder or an address of the user's has none.
+    expect(folder.content).not.toHaveProperty('gpuBuild');
     vi.spyOn(backend, 'engineSettings').mockResolvedValueOnce(settings({ comfyuiMode: 'url', comfyuiUrl: 'http://127.0.0.1:8188', comfyuiOutputDir: null }));
     expect(await call('get_engine_info')).toMatchObject({ content: { address: 'http://127.0.0.1:8188', outputFolder: expect.stringContaining('not known') } });
   });

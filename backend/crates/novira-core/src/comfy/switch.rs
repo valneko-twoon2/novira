@@ -1,7 +1,8 @@
 //! Changing the version of the ComfyUI novira installed: the release package replaces the old one, the pack folders move
 //! over, and every pack is installed again because the Python libraries it needs lived in the old package. The old
 //! package is kept until the new one answers, and put back when it does not. The same switch, to the same version,
-//! changes the package (nvidia or amd) when the settings name another one (`change_package`).
+//! changes the package (nvidia or amd) when the settings name another one, or `auto` stands for another one on this PC
+//! (`change_package`).
 use super::client::ComfyEngine;
 use super::install;
 use super::node_packs;
@@ -50,12 +51,13 @@ impl ComfyEngine {
         if !node_packs::valid_tag(tag) {
             return Err(EngineError::Failed(format!("Not a ComfyUI version: {tag}")));
         }
-        let (Some((root, package)), Some(process)) = (&self.installer, &self.process) else {
+        let (Some((root, choice)), Some(process)) = (&self.installer, &self.process) else {
             return Err(EngineError::Failed(
                 "This ComfyUI was not installed by novira, so its version cannot be changed here"
                     .into(),
             ));
         };
+        let (package, _) = super::client::packages_for(choice).await;
         {
             // Not while another caller is starting it.
             let _guard = self.start_lock.lock().await;
@@ -63,7 +65,7 @@ impl ComfyEngine {
             let result = install::install_version(
                 &self.http,
                 root,
-                package,
+                &package,
                 Some(tag),
                 true,
                 cancel,

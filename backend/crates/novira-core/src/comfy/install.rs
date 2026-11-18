@@ -28,7 +28,7 @@ pub fn package_url_for(package: &str, tag: Option<&str>) -> Result<String, Strin
         "amd" => "ComfyUI_windows_portable_amd.7z",
         other => {
             return Err(format!(
-                "Unknown comfyuiPackage '{other}' (use \"nvidia\" or \"amd\")"
+                "Unknown comfyuiPackage '{other}' (use \"auto\", \"nvidia\" or \"amd\")"
             ))
         }
     };
@@ -41,6 +41,31 @@ pub fn package_url_for(package: &str, tag: Option<&str>) -> Result<String, Strin
         crate::endpoints::Service::GitHub,
         &path,
     ))
+}
+
+/// The file in `.downloads` that the release package of `package` (at `tag`, or the latest) is downloaded into and kept
+/// in until it is unpacked. It names the package, so an archive kept after a failed unpack is never unpacked as another
+/// package.
+pub fn archive_name(package: &str, tag: Option<&str>) -> String {
+    match tag {
+        Some(t) => format!("comfyui-{package}-{t}.7z"),
+        None => format!("comfyui-{package}.7z"),
+    }
+}
+
+/// Deletes the archive an older version kept for the same release under a name without its package (`comfyui.7z`,
+/// `comfyui-<tag>.7z`), and its partial download: which package it holds is not known, so it is never unpacked.
+fn remove_unnamed_archive(downloads: &Path, tag: Option<&str>) {
+    let archive = downloads.join(match tag {
+        Some(t) => format!("comfyui-{t}.7z"),
+        None => "comfyui.7z".to_string(),
+    });
+    let part = archive.with_extension("part");
+    let mut resume = part.clone().into_os_string();
+    resume.push(".resume");
+    for file in [archive, part, PathBuf::from(resume)] {
+        let _ = std::fs::remove_file(file);
+    }
 }
 
 pub fn package_url(package: &str) -> Result<String, String> {
@@ -121,9 +146,9 @@ pub fn adopt_package(root: &Path, package: &str) -> std::io::Result<()> {
 }
 
 /// Whether the install in `root` was made from another package than `package`. An install without a record is adopted
-/// as `package` first, so it is not reinstalled by mistake.
-pub fn package_changed(root: &Path, package: &str) -> std::io::Result<bool> {
-    adopt_package(root, package)?;
+/// as `unrecorded` first (the package such an install came from, `ComfyuiPackageChoice::unrecorded`).
+pub fn package_changed(root: &Path, unrecorded: &str, package: &str) -> std::io::Result<bool> {
+    adopt_package(root, unrecorded)?;
     Ok(installed_package(root).is_some_and(|installed| installed != package))
 }
 
@@ -296,17 +321,16 @@ pub async fn install_version(
                 .into(),
         ));
     }
+    // Checks `package` and `tag` too, so both are plain names below.
     let url = package_url_for(package, tag).map_err(EngineError::Failed)?;
     let downloads = root.join(".downloads");
     let tool = root.join(".tools").join("7zr.exe");
-    let archive = downloads.join(match tag {
-        Some(t) => format!("comfyui-{t}.7z"),
-        None => "comfyui.7z".to_string(),
-    });
+    let archive = downloads.join(archive_name(package, tag));
     let unpacking = root.join(".unpacking");
     std::fs::create_dir_all(&downloads).map_err(fail)?;
     std::fs::create_dir_all(root.join(".tools")).map_err(fail)?;
     let _ = std::fs::remove_dir_all(&unpacking);
+    remove_unnamed_archive(&downloads, tag);
 
     if !tool.is_file() {
         status(EngineStatus::Downloading {
@@ -417,6 +441,69 @@ fn archive_is_damaged(message: &str) -> bool {
 mod tests {
     use super::*;
 
+    // tags: equivalence
+    #[test]
+    fn a_kept_archive_is_named_by_its_package_and_release() {
+        assert_eq!(archive_name("nvidia", None), "comfyui-nvidia.7z");
+        assert_eq!(
+            archive_name("amd", Some("v0.45.0")),
+            "comfyui-amd-v0.45.0.7z"
+        );
+        assert_ne!(archive_name("nvidia", None), archive_name("amd", None));
+        assert_ne!(
+            archive_name("nvidia", Some("v1")),
+            archive_name("amd", Some("v1"))
+        );
+    }
+
+    // tags: state-transition, boundary
+    #[test]
+    fn an_archive_kept_under_a_name_without_its_package_goes_with_its_partial_download() {
+        let dir = tempfile::tempdir().unwrap();
+        let d = dir.path();
+        let names = [
+            "comfyui.7z",
+            "comfyui.part",
+            "comfyui.part.resume",
+            "comfyui-v1.7z",
+            "comfyui-nvidia.7z",
+            "comfyui-nvidia.part",
+            "comfyui-amd-v1.7z",
+        ];
+        for name in names {
+            std::fs::write(d.join(name), "x").unwrap();
+        }
+        remove_unnamed_archive(d, None);
+        let left = |d: &Path| {
+            let mut v: Vec<String> = std::fs::read_dir(d)
+                .unwrap()
+                .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+                .collect();
+            v.sort();
+            v
+        };
+        assert_eq!(
+            left(d),
+            [
+                "comfyui-amd-v1.7z",
+                "comfyui-nvidia.7z",
+                "comfyui-nvidia.part",
+                "comfyui-v1.7z"
+            ]
+        );
+        remove_unnamed_archive(d, Some("v1"));
+        assert_eq!(
+            left(d),
+            [
+                "comfyui-amd-v1.7z",
+                "comfyui-nvidia.7z",
+                "comfyui-nvidia.part"
+            ]
+        );
+        // Nothing there: nothing to do.
+        remove_unnamed_archive(&d.join("missing"), None);
+    }
+
     /// A ComfyUI folder that counts as installed (its `main.py` is there), with its `portable/` folder.
     fn fake_install(root: &Path) {
         std::fs::create_dir_all(comfyui_dir(root)).unwrap();
@@ -430,12 +517,25 @@ mod tests {
         fake_install(dir.path());
         assert_eq!(installed_package(dir.path()), None);
         assert!(
-            !package_changed(dir.path(), "amd").unwrap(),
+            !package_changed(dir.path(), "amd", "amd").unwrap(),
             "adopted, not changed"
         );
         assert_eq!(installed_package(dir.path()).as_deref(), Some("amd"));
-        assert!(package_changed(dir.path(), "nvidia").unwrap());
-        assert!(!package_changed(dir.path(), "amd").unwrap());
+        assert!(package_changed(dir.path(), "amd", "nvidia").unwrap());
+        assert!(
+            !package_changed(dir.path(), "nvidia", "amd").unwrap(),
+            "the record counts once written"
+        );
+    }
+
+    // tags: state-transition, condition
+    #[test]
+    fn an_install_without_a_record_counts_as_what_it_came_from_not_as_the_package_wanted_now() {
+        // An NVIDIA install from before the record, on a PC whose automatic choice is now AMD's: a change.
+        let dir = tempfile::tempdir().unwrap();
+        fake_install(dir.path());
+        assert!(package_changed(dir.path(), "nvidia", "amd").unwrap());
+        assert_eq!(installed_package(dir.path()).as_deref(), Some("nvidia"));
     }
 
     // tags: condition

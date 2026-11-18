@@ -5,7 +5,9 @@
 mod fake_site;
 
 use fake_site::{client, site, Route};
-use novira_core::comfy::install::{comfyui_dir, install, is_installed, package_url, sevenzip_url};
+use novira_core::comfy::install::{
+    archive_name, comfyui_dir, install, is_installed, package_url, sevenzip_url,
+};
 use novira_core::engine::{EngineError, EngineStatus};
 use novira_core::packs::{
     file_path, files, install_files, is_installed as pack_installed, PackKind, PackStatus,
@@ -104,8 +106,12 @@ async fn the_tool_and_the_package_are_downloaded_unpacked_and_moved_into_place()
     assert!(comfyui_dir(root.path()).join("main.py").is_file());
     assert!(root.path().join(".tools").join("7zr.exe").is_file());
     // The archive and the half-written names are gone once the package is in place.
-    assert!(!root.path().join(".downloads").join("comfyui.7z").exists());
-    assert!(!root.path().join(".downloads").join("comfyui.part").exists());
+    let archive = root
+        .path()
+        .join(".downloads")
+        .join(archive_name("nvidia", None));
+    assert!(!archive.exists());
+    assert!(!archive.with_extension("part").exists());
 }
 
 // tags: error-guessing
@@ -124,7 +130,11 @@ async fn a_package_the_host_does_not_have_is_an_error_and_leaves_no_partial_file
     )
     .await;
     assert!(matches!(result, Err(EngineError::Failed(m)) if m.contains("Download answered 404")));
-    assert!(!root.path().join(".downloads").join("comfyui.part").exists());
+    let archive = root
+        .path()
+        .join(".downloads")
+        .join(archive_name("amd", None));
+    assert!(!archive.with_extension("part").exists());
     assert!(!is_installed(root.path()));
 }
 

@@ -3,7 +3,7 @@
 // each change; they apply at the next start, which a notice says.
 import { FolderPlus, X } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
-import { backend, hasNativeDialogs, type ComfyuiPackage, type EngineSettings, type EngineSettingsPatch } from '@/backend';
+import { backend, hasNativeDialogs, type ComfyuiPackage, type ComfyuiPackageChoice, type EngineSettings, type EngineSettingsPatch } from '@/backend';
 import { t } from '@/i18n';
 import { toast } from '@/state/toasts';
 import { Button, IconButton, Select, SliderNumber, Spinner, Switch } from '@/ui';
@@ -14,7 +14,12 @@ import { Row, SectionBlock } from './settingsLayout';
 const SAVE_DELAY_MS = 500;
 /** The start timeout the backend takes, in seconds. */
 const TIMEOUT_RANGE = { min: 30, max: 1800, step: 10 } as const;
-const PACKAGES: ComfyuiPackage[] = ['nvidia', 'amd'];
+const PACKAGES: ComfyuiPackageChoice[] = ['auto', 'nvidia', 'amd'];
+/** The label of each choice; `auto` names the package it stands for on this PC. */
+const packageLabel = (choice: ComfyuiPackageChoice, auto: ComfyuiPackage): string => {
+  if (choice === 'auto') return auto === 'amd' ? t('settings.engine.package.autoAmd') : t('settings.engine.package.autoNvidia');
+  return choice === 'amd' ? t('settings.engine.package.amd') : t('settings.engine.package.nvidia');
+};
 
 const failed = (err: unknown) => toast({ status: 'error', title: t('settings.engine.failed'), description: err instanceof Error ? err.message : String(err) });
 
@@ -22,7 +27,7 @@ export function EnginePane() {
   const [engine, setEngine] = useState<EngineSettings | null>(null);
   const [busy, setBusy] = useState(false);
   // A package chosen in the select that waits for the user to confirm the reinstall; null when there is none.
-  const [pendingPackage, setPendingPackage] = useState<ComfyuiPackage | null>(null);
+  const [pendingPackage, setPendingPackage] = useState<ComfyuiPackageChoice | null>(null);
   const [timeout, setTimeoutSecs] = useState<number | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => void (saveTimer.current && clearTimeout(saveTimer.current)), []);
@@ -62,11 +67,13 @@ export function EnginePane() {
       </div>
     );
   }
-  // An install of unknown origin is taken to be the saved package, as the backend does. Another package reinstalls
-  // ComfyUI at the next start (a large download), so while an install exists the change waits for a confirmation.
-  const installedFrom = engine.installedComfyuiPackage ?? engine.comfyuiPackage;
-  const choosePackage = (next: ComfyuiPackage) => {
-    if (engine.comfyuiInstalled && next !== installedFrom) {
+  // The package a choice installs on this PC: `auto` stands for the one that fits its graphics cards.
+  const installs = (choice: ComfyuiPackageChoice): ComfyuiPackage => (choice === 'auto' ? engine.autoComfyuiPackage : choice);
+  // Another package than the installed one reinstalls ComfyUI at the next start (a large download), so while an install
+  // exists that change waits for a confirmation.
+  const installedFrom = engine.installedComfyuiPackage ?? installs(engine.comfyuiPackage);
+  const choosePackage = (next: ComfyuiPackageChoice) => {
+    if (engine.comfyuiInstalled && installs(next) !== installedFrom) {
       setPendingPackage(next);
       return;
     }
@@ -97,7 +104,7 @@ export function EnginePane() {
               className="st-select"
               value={pendingPackage ?? engine.comfyuiPackage}
               onChange={choosePackage}
-              options={PACKAGES.map((p) => ({ value: p, label: t(`settings.engine.package.${p}`) }))}
+              options={PACKAGES.map((p) => ({ value: p, label: packageLabel(p, engine.autoComfyuiPackage) }))}
               disabled={busy}
               aria-label={t('settings.engine.package.label')}
               data-testid="settings-engine-package"

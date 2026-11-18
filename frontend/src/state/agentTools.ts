@@ -514,10 +514,15 @@ const HANDLERS: Record<string, Handler> = {
   get_engine_info: async () => {
     const e = await backend.engineSettings();
     const how = e.comfyuiMode === 'owned' ? 'novira installs and runs its own ComfyUI' : e.comfyuiMode === 'folder' ? "novira runs the user's own ComfyUI folder" : 'novira reaches a ComfyUI by its address';
+    // Which build of ComfyUI novira's own install is (for NVIDIA or AMD GPUs), and the setting that picks it.
+    const build = {
+      installed: e.installedComfyuiPackage ?? 'not installed yet',
+      setting: e.comfyuiPackage === 'auto' ? `auto (${e.autoComfyuiPackage} on this PC, from its graphics cards)` : e.comfyuiPackage,
+    };
     return done({
       engine: how,
       state: useEngine.getState().status.state,
-      ...(e.comfyuiMode === 'owned' ? { installFolder: e.comfyuiRoot } : {}),
+      ...(e.comfyuiMode === 'owned' ? { installFolder: e.comfyuiRoot, gpuBuild: build } : {}),
       ...(e.comfyuiMode === 'folder' && e.comfyuiDir ? { comfyuiFolder: e.comfyuiDir } : {}),
       ...(e.comfyuiMode === 'url' && e.comfyuiUrl ? { address: e.comfyuiUrl } : {}),
       outputFolder: e.comfyuiOutputDir ?? 'not known: ComfyUI is reached by its address, so its folders are on that side',

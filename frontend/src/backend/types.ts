@@ -337,8 +337,11 @@ export interface LowMemoryMode {
 /** Which ComfyUI the app uses: its own copy, a server at `comfyuiUrl`, or the folder at `comfyuiDir`. */
 export type ComfyuiMode = 'owned' | 'url' | 'folder';
 
-/** The ComfyUI portable package novira downloads. */
+/** A ComfyUI portable package novira downloads: the one for NVIDIA GPUs or the one for AMD GPUs. */
 export type ComfyuiPackage = 'nvidia' | 'amd';
+
+/** The `comfyuiPackage` setting: a package, or `auto` for the one that fits this PC's graphics cards. */
+export type ComfyuiPackageChoice = 'auto' | ComfyuiPackage;
 
 /** The engine settings of the backend's `settings.json` that the Settings screen shows. Changes apply at the next start. */
 export interface EngineSettings {
@@ -362,10 +365,13 @@ export interface EngineSettings {
   comfyuiRoot: string;
   /** The folder the running ComfyUI saves into (its `output`), for display; null when it is reached by URL only. */
   comfyuiOutputDir: string | null;
-  comfyuiPackage: ComfyuiPackage;
+  comfyuiPackage: ComfyuiPackageChoice;
+  /** The package `auto` installs on this PC (from its graphics cards). */
+  autoComfyuiPackage: ComfyuiPackage;
   /** novira's own ComfyUI is installed in the data folder (owned mode only). */
   comfyuiInstalled: boolean;
-  /** The package that install was made from; `null` when it is not known (an install made before the record existed). */
+  /** The package that install was made from (an install made before the record existed counts as NVIDIA's unless AMD's
+   * was chosen); `null` when nothing is installed. */
   installedComfyuiPackage: ComfyuiPackage | null;
   /** Seconds to wait for ComfyUI to answer after starting it: a whole number from 30 to 1800. */
   comfyuiStartTimeoutSecs: number;
@@ -379,7 +385,7 @@ export interface EngineSettings {
 
 /** The engine settings `setEngineSettings` may change; a missing field is left as it is. */
 export interface EngineSettingsPatch {
-  comfyuiPackage?: ComfyuiPackage;
+  comfyuiPackage?: ComfyuiPackageChoice;
   comfyuiStartTimeoutSecs?: number;
   civitaiLookup?: boolean;
 }

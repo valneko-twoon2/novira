@@ -250,7 +250,6 @@
   "settings.engine.comfyui.owned": "Установленный приложением",
   "settings.engine.comfyui.otherHelp": "Используется ComfyUI, указанный в файле настроек. Здесь его изменить нельзя.",
   "settings.engine.package.label": "Пакет ComfyUI",
-  "settings.engine.package.help": "Вид, который используется при следующей загрузке ComfyUI (первая установка или смена версии) или при смене вида установленного ComfyUI.",
   "settings.engine.package.nvidia": "Для видеокарт NVIDIA",
   "settings.engine.package.amd": "Для видеокарт AMD",
   "settings.engine.timeout.label": "Секунд ожидания запуска",

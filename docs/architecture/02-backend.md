@@ -33,7 +33,7 @@ Cargo ワークスペースの根は `backend/`（`Cargo.toml`、`Cargo.lock`、
 | `secret.rs` | Civitai キーと Hugging Face トークンは Windows の資格情報マネージャー、ほかの保存キーとコンテンツクレデンシャルの署名鍵は Windows DPAPI で暗号化 |
 | `sync.rs` | panic に耐えるロックのヘルパー（`lock_safe`、`read_safe`、`write_safe`）。ロックに `unwrap` は使わない |
 | `child_job.rs` | Windows のジョブオブジェクト: ComfyUI と音声ワーカーは、アプリが強制終了されてもアプリと一緒に終わる |
-| `gpu_lock.rs`、`hardware.rs`、`fonts.rs` | GPU ロックのディレクトリとその持ち主の記録、カードとそのメモリ、インストール済みのフォントファミリー |
+| `gpu_lock.rs`、`hardware.rs`、`fonts.rs` | GPU ロックのディレクトリとその持ち主の記録、カードとそのメモリとそれに合うエンジンのパッケージ、インストール済みのフォントファミリー |
 | `applog.rs`、`unfinished.rs`、`packs.rs`、`test_timing.rs` | ログ（stderr、`logs/novira.log`、開発者ログのイベント）、中断したダウンロードの部分ファイル、ComfyUI のファイルのモデルパック（動画、ターボ動画、音楽、LaMa）、テスト用に待ち時間を縮めるデバッグ専用の仕組み |
 
 | フォルダ | 中身 |

@@ -48,7 +48,7 @@ covers:
 | キュー | `enqueue`、`cancel_queue_item`、`cancel_batch`、`cancel_pending`、`clear_queue`、`prune_queue`、`pause_processor`、`resume_processor`、`retry_queue_item` | 画像を指せるのはギャラリーの名前だけ |
 | インストール、モデル、パック | `install_model`、`cancel_install`、`update_model`、`delete_model`、`install_pack`、`cancel_pack`、`install_node_pack`、`cancel_node_pack`、`remove_node_pack`、`switch_comfy_version`、`delete_unfinished_downloads`、`prepare_watermark`（開始のみ。ページが状態をポーリングする） | アプリと同じ検査: https のみ、ホストは完全一致、フォルダは固定、削除できるのは一覧の未完了ファイルだけ。`install_model` は `api::install_model_remote` を通り、ローカルのファイルパスを断る（アプリが受けるのは自分のフォルダのスキャンからだけで、ブラウザにはない）。`prepare_watermark` 以外は `LOOPBACK_ONLY` |
 | モデルのサイト、レジストリ | `list_hugging_face_files`、`search_civitai`、`civitai_samples`、`check_model_updates`、`comfy_versions`、`node_pack_versions`、`registry_nodes`、`node_pack_info`、`face_rig_preview` | アドレスはバックエンドで固定、名前もそこで検証 |
-| エンジン設定 | `restart_engine`、`set_low_memory_mode`、`set_engine_settings`、`remove_model_root` | 各値は書く前に検査（パッケージは `nvidia` か `amd`、タイムアウトは範囲内）。パスは足せない（`add_model_root` はダイアログ要） |
+| エンジン設定 | `restart_engine`、`set_low_memory_mode`、`set_engine_settings`、`remove_model_root` | 各値は書く前に検査（パッケージは `auto`・`nvidia`・`amd`、タイムアウトは範囲内）。パスは足せない（`add_model_root` はダイアログ要） |
 | キー | `set_hf_token`、`set_civitai_key` | 書き込み専用。Windows 資格情報マネージャーに保存して返さない（`has_*` は設定済みかだけ） |
 | アプリ外のページ | `open_civitai_page`、`open_huggingface_page`、`open_source_page` | `api::page_url` がアドレスを返す（デスクトップシェルと同じ許可リスト 1 つ）。ページは新しいタブで開く |
 | アシスタント | `agent_login`、`agent_endpoint_save`、`agent_endpoint_models`、`agent_endpoint_test`、`agent_chat`、`agent_tool_result`、`agent_cancel`、`lookup_reference` | バックエンドがアドレス、モデル、キーを検査する（キーは DPAPI で保存し、返さない）。ツール呼び出しはイベントでページに届き、`agent_tool_result` で戻る |

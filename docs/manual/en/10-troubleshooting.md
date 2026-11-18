@@ -42,7 +42,17 @@ What to try:
 4. Security software may be inspecting the new files and stop the unpacking. The app automatically retries several times, but if it keeps happening, try excluding the data folder (see below) from scanning, or turn the software off temporarily.
 5. If the reason says "see logs/comfyui.log", the engine's log has a detailed reason ([How to read the logs](#how-to-read-the-logs)).
 
-> The engine is ComfyUI for Windows, and by default the one for NVIDIA GPUs is installed. There are also settings for using an AMD GPU or a ComfyUI you installed yourself, but these are for advanced users ([Advanced settings](#advanced-settings)).
+> The engine is ComfyUI for Windows, and the one for NVIDIA GPUs or the one for AMD GPUs is installed to fit this PC's GPU. There is also a setting for using a ComfyUI you installed yourself, but it is for advanced users ([Advanced settings](#advanced-settings)).
+
+### The engine does not start on an AMD GPU
+
+On an AMD GPU, the AMD version of ComfyUI is used (it runs on the GPU through ROCm). It works on the Radeon cards that ComfyUI supports. [ComfyUI's guide](https://github.com/comfyanonymous/ComfyUI) names the Radeon RX 6000 series and later, Ryzen AI Max and others.
+
+Things to try:
+
+1. Update the AMD graphics driver to the latest. The AMD version of ComfyUI needs a recent driver.
+2. In **{{ui:settings.tab.engine}}** in **{{ui:settings.title}}**, check that **{{ui:settings.engine.package.label}}** is the one for AMD GPUs. On a PC with both an NVIDIA and an AMD GPU, or one whose NVIDIA GPU was replaced by an AMD GPU while the NVIDIA driver stayed, auto picks the one for NVIDIA GPUs, so choose **{{ui:settings.engine.package.amd}}**.
+3. If it still does not start, the engine's log (`comfyui.log`) has the reason ([How to read the logs](#how-to-read-the-logs)).
 
 ### The engine seems to have stopped partway
 
@@ -234,7 +244,7 @@ If you put a `settings.json` in the data folder, you can change how things such 
 
 | Setting name | What it is |
 |---|---|
-| `comfyuiPackage` | The kind of engine to install. `nvidia` (default) or `amd` |
+| `comfyuiPackage` | The kind of engine to install. `auto` (default: fits this PC's GPU), `nvidia` or `amd` |
 | `comfyuiUrl` | Connect to a ComfyUI that is already running (the app does not install or start an engine) |
 | `comfyuiDir` | Use the folder of a ComfyUI you installed yourself |
 | `modelRoots` | Add folders to search for models |

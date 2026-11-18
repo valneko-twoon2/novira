@@ -174,7 +174,8 @@ describe('engine settings', { tags: [] }, () => {
       comfyuiUrl: null,
       comfyuiDir: null,
       comfyuiInstallDir: null,
-      comfyuiPackage: 'nvidia',
+      comfyuiPackage: 'auto',
+      autoComfyuiPackage: 'nvidia',
       comfyuiInstalled: true,
       installedComfyuiPackage: 'nvidia',
       comfyuiStartTimeoutSecs: 180,
@@ -211,8 +212,11 @@ describe('engine settings', { tags: [] }, () => {
         comfyuiPackage: 'amd',
         comfyuiStartTimeoutSecs: 30,
       });
-      const back = await settle(backend.setEngineSettings({ comfyuiPackage: 'nvidia', comfyuiStartTimeoutSecs: 180 }));
+      const back = await settle(backend.setEngineSettings({ comfyuiPackage: 'auto', comfyuiStartTimeoutSecs: 180 }));
       expect(back.restartNeeded).toBe(false);
+      // Naming the package auto stands for on this PC installs the same thing: no restart either.
+      const named = await settle(backend.setEngineSettings({ comfyuiPackage: 'nvidia' }));
+      expect(named).toMatchObject({ comfyuiPackage: 'nvidia', restartNeeded: false });
     },
   );
 
@@ -221,12 +225,12 @@ describe('engine settings', { tags: [] }, () => {
     for (const secs of [29, 1801, 30.5, -60, Number.NaN]) {
       await refused(backend.setEngineSettings({ comfyuiPackage: 'amd', comfyuiStartTimeoutSecs: secs }), /30 to 1800/);
     }
-    for (const pkg of ['cpu', 'NVIDIA', '', '../amd']) {
-      await refused(backend.setEngineSettings({ comfyuiPackage: pkg as 'amd' }), /"nvidia" or "amd"/);
+    for (const pkg of ['cpu', 'NVIDIA', 'Auto', 'auto ', '', '../amd']) {
+      await refused(backend.setEngineSettings({ comfyuiPackage: pkg as 'amd' }), /must be "auto", "nvidia" or "amd"/);
     }
     await refused(backend.setEngineSettings({ comfyuiUrl: 'http://evil.example' } as never), /unknown field/);
     expect(await settle(backend.engineSettings())).toMatchObject({
-      comfyuiPackage: 'nvidia',
+      comfyuiPackage: 'auto',
       comfyuiStartTimeoutSecs: 180,
       restartNeeded: false,
     });

@@ -7,6 +7,7 @@ import type {
   ClipVisionModel,
   ComfyuiMode,
   ComfyuiPackage,
+  ComfyuiPackageChoice,
   ControlMode,
   GenerationMode,
   ImageCategory,
@@ -71,4 +72,5 @@ export const enums = {
   AgentToolsState: allOf<AgentToolsState>()(['unknown', 'supported', 'unsupported']),
   ComfyuiMode: allOf<ComfyuiMode>()(['owned', 'url', 'folder']),
   ComfyuiPackage: allOf<ComfyuiPackage>()(['nvidia', 'amd']),
+  ComfyuiPackageChoice: allOf<ComfyuiPackageChoice>()(['auto', 'nvidia', 'amd']),
 };

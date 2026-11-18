@@ -5,7 +5,7 @@
 mod fake_site;
 
 use fake_site::{site, Route};
-use novira_core::comfy::install::{comfyui_dir, previous_dir, PORTABLE_DIR};
+use novira_core::comfy::install::{archive_name, comfyui_dir, previous_dir, PORTABLE_DIR};
 use novira_core::comfy::node_packs::custom_nodes_dir;
 use novira_core::comfy::process::{ComfyProcess, OwnedProcessConfig};
 use novira_core::comfy::ComfyEngine;
@@ -84,13 +84,16 @@ impl World {
         std::fs::create_dir_all(root.path().join(".tools")).unwrap();
         std::fs::copy(fake_tool(), root.path().join(".tools").join("7zr.exe")).unwrap();
         std::fs::create_dir_all(root.path().join(".downloads")).unwrap();
-        std::fs::write(
-            root.path()
-                .join(".downloads")
-                .join(format!("comfyui-{tag}.7z")),
-            archive_mode,
-        )
-        .unwrap();
+        // The release of either package, as the switch asks for the package the settings name.
+        for package in ["nvidia", "amd"] {
+            std::fs::write(
+                root.path()
+                    .join(".downloads")
+                    .join(archive_name(package, Some(tag))),
+                archive_mode,
+            )
+            .unwrap();
+        }
         let comfy = comfyui_dir(root.path());
         std::fs::create_dir_all(comfy.join("custom_nodes")).unwrap();
         std::fs::write(comfy.join("main.py"), "old").unwrap();
@@ -350,6 +353,53 @@ async fn a_package_change_installs_the_same_version_again() {
     assert_eq!(
         novira_core::comfy::install::installed_package(world.root()).as_deref(),
         Some("amd")
+    );
+    server.abort();
+    engine.shutdown();
+}
+
+// tags: condition, state-transition
+#[tokio::test]
+async fn auto_installs_the_package_of_this_pcs_cards_and_keeps_it_once_there() {
+    use novira_core::comfy::install::{adopt_package, installed_package};
+    use novira_core::types::ComfyuiPackage;
+    let auto = novira_core::hardware::auto_package();
+    let other = match auto {
+        ComfyuiPackage::Nvidia => ComfyuiPackage::Amd,
+        ComfyuiPackage::Amd => ComfyuiPackage::Nvidia,
+    };
+    // An install of the package auto does not stand for on this PC: auto installs the other one, same version.
+    let world = World::new("v0.3.0", "ok");
+    adopt_package(world.root(), other.name()).unwrap();
+    let (port, server) = answer_later(Duration::from_millis(500)).await;
+    let engine = world.engine_on(port, "auto");
+    tokio::time::sleep(Duration::from_millis(600)).await;
+    engine.prepare(&CancellationToken::new()).await.unwrap();
+    assert_eq!(
+        installed_package(world.root()).as_deref(),
+        Some(auto.name())
+    );
+    assert_eq!(
+        std::fs::read_to_string(comfyui_dir(world.root()).join("main.py")).unwrap(),
+        "x"
+    );
+    server.abort();
+    engine.shutdown();
+
+    // An install of the package auto stands for is started as it is.
+    let world = World::new("v0.3.0", "ok");
+    adopt_package(world.root(), auto.name()).unwrap();
+    let (port, server) = answer_later(Duration::from_millis(500)).await;
+    let engine = world.engine_on(port, "auto");
+    tokio::time::sleep(Duration::from_millis(600)).await;
+    engine.prepare(&CancellationToken::new()).await.unwrap();
+    assert_eq!(
+        installed_package(world.root()).as_deref(),
+        Some(auto.name())
+    );
+    assert_eq!(
+        std::fs::read_to_string(comfyui_dir(world.root()).join("main.py")).unwrap(),
+        "old"
     );
     server.abort();
     engine.shutdown();

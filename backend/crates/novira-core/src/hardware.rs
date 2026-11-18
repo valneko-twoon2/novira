@@ -5,8 +5,14 @@
 //! - Any other card on Windows (AMD, Intel): the display adapter's `HardwareInformation.qwMemorySize` in the registry
 //!   (read with `reg query`), which holds the real size as a 64-bit number (WMI's `AdapterRAM` stops at 4 GB).
 //! - Otherwise the memory is unknown.
+//!
+//! It also picks the ComfyUI package that fits the cards (`auto_package`, for the `auto` choice of `comfyuiPackage`)
+//! from the display drivers in the registry (their `MatchingDeviceId`). A driver stays while its card is switched off,
+//! so the choice does not change when a laptop turns its NVIDIA GPU off to save power.
+use crate::types::ComfyuiPackage;
 use serde::Serialize;
 use std::process::Command;
+use std::sync::OnceLock;
 
 /// The graphics card the models would run on.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -147,6 +153,68 @@ pub fn detect() -> HardwareInfo {
     HardwareInfo::unknown()
 }
 
+/// The PCI vendor ids of the makers that have a ComfyUI package.
+const NVIDIA_VENDOR: &str = "10DE";
+const AMD_VENDOR: &str = "1002";
+
+/// The PCI vendor of a device id (`PCI\VEN_10DE&DEV_2782&…` or a driver's `pci\ven_1002&dev_744c`): the four
+/// characters after `VEN_`, upper case. None for a device that is not on the PCI bus (`ROOT\BasicDisplay\0000`).
+fn pci_vendor(id: &str) -> Option<String> {
+    let id = id.trim().to_ascii_uppercase();
+    let rest = id.strip_prefix(r"PCI\VEN_")?;
+    let vendor = rest.get(..4)?;
+    matches!(rest.as_bytes().get(4), None | Some(b'&' | b'\\')).then(|| vendor.to_string())
+}
+
+/// The ComfyUI package for these display devices: NVIDIA's when any card is NVIDIA's, else AMD's when any is AMD's,
+/// else NVIDIA's (the package installed before the choice was automatic).
+pub fn package_for_devices<'a>(ids: impl IntoIterator<Item = &'a str>) -> ComfyuiPackage {
+    let vendors: Vec<String> = ids.into_iter().filter_map(pci_vendor).collect();
+    if !vendors.iter().any(|v| v == NVIDIA_VENDOR) && vendors.iter().any(|v| v == AMD_VENDOR) {
+        ComfyuiPackage::Amd
+    } else {
+        ComfyuiPackage::Nvidia
+    }
+}
+
+/// The `MatchingDeviceId` of every display driver in the output of `reg query <class> /s /v MatchingDeviceId`.
+fn driver_ids(out: &str) -> Vec<String> {
+    reg_values(out).into_iter().map(|(.., id)| id).collect()
+}
+
+/// The ids of this PC's display drivers: one per card Windows installed a driver for, also a card that is switched off
+/// or not plugged in now (a laptop's own GPU in a power-saving mode, an external one), which keeps its driver. Empty off
+/// Windows or when the registry cannot be read.
+fn display_devices() -> Vec<String> {
+    if cfg!(windows) {
+        if let Some(out) = run(
+            "reg",
+            &["query", ADAPTER_CLASS, "/s", "/v", "MatchingDeviceId"],
+        ) {
+            return driver_ids(&out);
+        }
+    }
+    Vec::new()
+}
+
+/// The package the `auto` choice of `comfyuiPackage` stands for on this PC, read once per run. Blocking (it starts a
+/// short program), so call it from a blocking task.
+pub fn auto_package() -> ComfyuiPackage {
+    static AUTO: OnceLock<ComfyuiPackage> = OnceLock::new();
+    *AUTO.get_or_init(|| {
+        let ids = display_devices();
+        let package = package_for_devices(ids.iter().map(String::as_str));
+        let vendors: Vec<String> = ids.iter().filter_map(|id| pci_vendor(id)).collect();
+        crate::applog::info(
+            "hardware",
+            format!(
+                "display driver vendors {vendors:?}: the automatic ComfyUI package is {package:?}"
+            ),
+        );
+        package
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -205,6 +273,130 @@ mod tests {
         );
         assert_eq!(reg_size("REG_BINARY", "00"), None);
         assert_eq!(reg_size("REG_SZ", "0x10"), None);
+    }
+
+    const RTX: &str = r"PCI\VEN_10DE&DEV_2782&SUBSYS_17AF10DE&REV_A1\4&39fddc03&0&0008";
+    const RADEON: &str = r"PCI\VEN_1002&DEV_747E&SUBSYS_E4561DA2&REV_C8\6&1F8A5E5C&0&00000019";
+    const RADEON_IGPU: &str = r"PCI\VEN_1002&DEV_15BF&SUBSYS_88B91043&REV_C1\4&2B3B0C9&0&0041";
+    const INTEL: &str = r"PCI\VEN_8086&DEV_A780&SUBSYS_88821043&REV_04\3&11583659&0&10";
+
+    // tags: equivalence, decision-table
+    #[test]
+    fn the_package_follows_the_makers_of_the_display_devices() {
+        use ComfyuiPackage::{Amd, Nvidia};
+        let cases: &[(&[&str], ComfyuiPackage)] = &[
+            (&[RTX], Nvidia),
+            (&[RADEON], Amd),
+            (&[RADEON_IGPU], Amd),
+            (&[INTEL, RADEON], Amd),
+            // NVIDIA's package wins over AMD's: a PC with both runs the NVIDIA card.
+            (&[RADEON_IGPU, RTX], Nvidia),
+            (&[RTX, RADEON], Nvidia),
+            // No card with a package: NVIDIA's, as before the choice was automatic.
+            (&[INTEL], Nvidia),
+            (&[r"ROOT\BasicDisplay\0000"], Nvidia),
+            (&[], Nvidia),
+        ];
+        for (ids, want) in cases {
+            assert_eq!(package_for_devices(ids.iter().copied()), *want, "{ids:?}");
+        }
+    }
+
+    // tags: equivalence
+    #[test]
+    fn a_driver_id_from_the_registry_counts_in_any_case() {
+        assert_eq!(
+            package_for_devices(["pci\\ven_1002&dev_744c"]),
+            ComfyuiPackage::Amd
+        );
+        assert_eq!(
+            package_for_devices([" PCI\\VEN_1002 "]),
+            ComfyuiPackage::Amd
+        );
+        assert_eq!(
+            package_for_devices(["pci\\ven_1002&dev_744c", "pci\\ven_10de&dev_2782"]),
+            ComfyuiPackage::Nvidia
+        );
+    }
+
+    // tags: error-guessing, boundary
+    #[test]
+    fn only_the_four_characters_after_ven_on_the_pci_bus_are_the_maker() {
+        assert_eq!(pci_vendor(RADEON).as_deref(), Some(AMD_VENDOR));
+        assert_eq!(pci_vendor(r"PCI\VEN_1002").as_deref(), Some(AMD_VENDOR));
+        for id in [
+            r"PCI\VEN_10020&DEV_1",
+            r"PCI\VEN_100",
+            r"PCI\VEN_",
+            r"ACPI\VEN_1002&DEV_0001",
+            r"USB\VID_1002&PID_0001",
+            r"SWD\REMOTEDISPLAYENUM\RdpIdd_IndirectDisplay",
+            "VEN_1002",
+            "",
+        ] {
+            assert_eq!(pci_vendor(id), None, "{id}");
+        }
+        assert_eq!(
+            package_for_devices([r"PCI\VEN_10020&DEV_1"]),
+            ComfyuiPackage::Nvidia
+        );
+    }
+
+    // tags: equivalence, scenario
+    #[test]
+    fn every_installed_display_driver_counts_also_of_a_card_that_is_off() {
+        // A laptop with a Radeon in its processor and an NVIDIA GPU that its power-saving mode has switched off: the
+        // NVIDIA driver is still installed, so the choice stays NVIDIA's.
+        let out = r"
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000
+    MatchingDeviceId    REG_SZ    pci\ven_1002&dev_15bf
+
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0001
+    MatchingDeviceId    REG_SZ    pci\ven_10de&dev_28a0
+
+End of search: 2 match(es) found.
+";
+        let ids = driver_ids(out);
+        assert_eq!(ids, ["pci\\ven_1002&dev_15bf", "pci\\ven_10de&dev_28a0"]);
+        assert_eq!(
+            package_for_devices(ids.iter().map(String::as_str)),
+            ComfyuiPackage::Nvidia
+        );
+        let amd_only = r"
+HKEY_LOCAL_MACHINE\SYSTEM\X\0000
+    MatchingDeviceId    REG_SZ    pci\ven_1002&dev_744c
+";
+        let ids = driver_ids(amd_only);
+        assert_eq!(
+            package_for_devices(ids.iter().map(String::as_str)),
+            ComfyuiPackage::Amd
+        );
+    }
+
+    // tags: boundary, error-guessing
+    #[test]
+    fn no_driver_in_the_registry_output_is_nvidias_package() {
+        for out in [
+            "",
+            "End of search: 0 match(es) found.",
+            "ERROR: The system was unable to find the specified registry key or value.",
+        ] {
+            assert!(driver_ids(out).is_empty(), "{out}");
+            assert_eq!(
+                package_for_devices(driver_ids(out).iter().map(String::as_str)),
+                ComfyuiPackage::Nvidia
+            );
+        }
+    }
+
+    // tags: scenario
+    #[test]
+    fn the_automatic_package_is_read_once_per_run() {
+        assert_eq!(auto_package(), auto_package());
+        assert_eq!(
+            auto_package(),
+            package_for_devices(display_devices().iter().map(String::as_str))
+        );
     }
 
     // tags: boundary

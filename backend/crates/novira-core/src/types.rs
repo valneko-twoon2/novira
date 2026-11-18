@@ -836,12 +836,68 @@ pub enum ComfyuiMode {
     Folder,
 }
 
-/// The ComfyUI portable package novira downloads (`comfyuiPackage`).
+/// A ComfyUI portable package novira downloads: the one for NVIDIA GPUs or the one for AMD GPUs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ComfyuiPackage {
     Nvidia,
     Amd,
+}
+
+impl ComfyuiPackage {
+    /// The name in `settings.json`, in the install's record and in the release file's name.
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Nvidia => "nvidia",
+            Self::Amd => "amd",
+        }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "nvidia" => Some(Self::Nvidia),
+            "amd" => Some(Self::Amd),
+            _ => None,
+        }
+    }
+}
+
+/// The `comfyuiPackage` setting: a package, or `auto` for the one that fits this PC's graphics cards
+/// (`hardware::auto_package`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ComfyuiPackageChoice {
+    Auto,
+    Nvidia,
+    Amd,
+}
+
+impl ComfyuiPackageChoice {
+    /// The choice a `comfyuiPackage` value names; None for a value the app does not know.
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "auto" => Some(Self::Auto),
+            _ => ComfyuiPackage::from_name(name).map(|p| match p {
+                ComfyuiPackage::Nvidia => Self::Nvidia,
+                ComfyuiPackage::Amd => Self::Amd,
+            }),
+        }
+    }
+
+    /// The package this choice installs on a PC whose cards fit `auto`.
+    pub fn resolve(self, auto: ComfyuiPackage) -> ComfyuiPackage {
+        match self {
+            Self::Auto => auto,
+            Self::Nvidia => ComfyuiPackage::Nvidia,
+            Self::Amd => ComfyuiPackage::Amd,
+        }
+    }
+
+    /// The package an install without a record was made from under this choice. Before `auto` existed the default
+    /// was NVIDIA's, so an install the record does not name came from AMD's only when that was chosen.
+    pub fn unrecorded(self) -> ComfyuiPackage {
+        self.resolve(ComfyuiPackage::Nvidia)
+    }
 }
 
 /// The engine settings the Settings screen shows, as saved in `settings.json`. Changes apply at the next start.
@@ -868,10 +924,13 @@ pub struct EngineSettings {
     pub comfyui_root: String,
     /// The folder the running ComfyUI saves into (its `output`), for display; `None` when it is reached by URL only.
     pub comfyui_output_dir: Option<String>,
-    pub comfyui_package: ComfyuiPackage,
+    pub comfyui_package: ComfyuiPackageChoice,
+    /// The package `auto` installs on this PC (from its graphics cards).
+    pub auto_comfyui_package: ComfyuiPackage,
     /// novira's own ComfyUI is installed in the data folder (owned mode only).
     pub comfyui_installed: bool,
-    /// The package that install was made from; `None` when it is not known (an install made before the record existed).
+    /// The package that install was made from (an install made before the record existed counts as
+    /// `ComfyuiPackageChoice::unrecorded`); `None` when nothing is installed.
     pub installed_comfyui_package: Option<ComfyuiPackage>,
     pub comfyui_start_timeout_secs: u64,
     /// The extra model folders; novira's own `models/` is always scanned and is not listed.

@@ -311,7 +311,7 @@ describe('comic and text', { tags: [] }, () => {
 
 describe('the engine', { tags: [] }, () => {
   it('turns the Civitai lookup on, and says it applies at the next start', { tags: ['scenario'] }, async () => {
-    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
+    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, autoComfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     const set = vi.spyOn(backend, 'setEngineSettings').mockImplementation(async (p) => ({ ...engine, ...p, restartNeeded: true }));
     openTab('engine');
@@ -324,7 +324,7 @@ describe('the engine', { tags: [] }, () => {
     'shows where the data and the engine are, and changes the package, the start wait and the model folders',
     { tags: ['scenario'] },
     async () => {
-      const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
+      const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, autoComfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
       vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
       const set = vi.spyOn(backend, 'setEngineSettings').mockImplementation(async (p) => ({ ...engine, ...p, restartNeeded: true }));
       vi.spyOn(backend, 'addModelRoot').mockResolvedValueOnce({ ...engine, modelRoots: ['D:\\Models'], restartNeeded: true }).mockResolvedValueOnce(null);
@@ -360,7 +360,7 @@ describe('the engine', { tags: [] }, () => {
     'changes the data folder after asking what happens to the data, and cancels a change that waits',
     { tags: ['state-transition'] },
     async () => {
-      const engine = { dataDir: 'C:\\data', dataDirChangeable: true, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
+      const engine = { dataDir: 'C:\\data', dataDirChangeable: true, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, autoComfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
       vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
       const choose = vi.spyOn(backend, 'chooseDataDir').mockImplementation(async (moveData) => ({ ...engine, dataDirNext: 'D:\\data2', dataDirMoves: moveData, restartNeeded: true }));
       const cancel = vi.spyOn(backend, 'cancelDataDirChange').mockResolvedValue(engine);
@@ -385,7 +385,7 @@ describe('the engine', { tags: [] }, () => {
   );
 
   it('cannot change a data folder that is fixed, and shows why a move did not happen', { tags: ['error-guessing'] }, async () => {
-    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: 'not empty', comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
+    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: 'not empty', comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, autoComfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     openTab('engine');
     expect((await screen.findByTestId('settings-engine-data-dir-note')).textContent).toBe(t('settings.engine.dataDir.note', { reason: 'not empty' }));
@@ -393,7 +393,7 @@ describe('the engine', { tags: [] }, () => {
   });
 
   it('chooses the place novira installs ComfyUI in, with no button back to the default', { tags: ['scenario'] }, async () => {
-    const engine = { dataDir: 'C:\\data', dataDirChangeable: true, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null as string | null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
+    const engine = { dataDir: 'C:\\data', dataDirChangeable: true, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null as string | null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, autoComfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [] as string[], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     const choose = vi.spyOn(backend, 'chooseComfyuiInstallDir').mockResolvedValueOnce({ ...engine, comfyuiInstallDir: 'E:\\engine', restartNeeded: true }).mockResolvedValueOnce(null);
     openTab('engine');
@@ -408,7 +408,7 @@ describe('the engine', { tags: [] }, () => {
   });
 
   it('shows an engine named elsewhere, and reports a change the backend refuses', { tags: ['error-guessing'] }, async () => {
-    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'url' as const, comfyuiUrl: 'http://127.0.0.1:8188', comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [], restartNeeded: false };
+    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'url' as const, comfyuiUrl: 'http://127.0.0.1:8188', comfyuiDir: null, comfyuiPackage: 'nvidia' as const, autoComfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: [], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     vi.spyOn(backend, 'addModelRoot').mockRejectedValue(new Error('already listed'));
     openTab('engine');
@@ -419,7 +419,7 @@ describe('the engine', { tags: [] }, () => {
 
   it('says an extra model folder is added in the desktop app when the page is on the browser server', { tags: ['condition'] }, async () => {
     asBrowserServer();
-    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: ['D:\\Models'], restartNeeded: false };
+    const engine = { dataDir: 'C:\\data', dataDirChangeable: false, dataDirNext: null, dataDirMoves: false, dataDirNote: null, comfyuiInstallDir: null, comfyuiRoot: 'C:\\data\\comfyui', comfyuiOutputDir: null, comfyuiMode: 'owned' as const, comfyuiUrl: null, comfyuiDir: null, comfyuiPackage: 'nvidia' as const, autoComfyuiPackage: 'nvidia' as const, comfyuiInstalled: false, installedComfyuiPackage: null, comfyuiStartTimeoutSecs: 180, civitaiLookup: false, modelRoots: ['D:\\Models'], restartNeeded: false };
     vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
     openTab('engine');
     expect((await screen.findByTestId('settings-engine-root-desktop-only')).textContent).toBe(t('common.desktopOnly'));
@@ -436,6 +436,7 @@ describe('the engine', { tags: [] }, () => {
       comfyuiUrl: null,
       comfyuiDir: null,
       comfyuiPackage: 'nvidia',
+      autoComfyuiPackage: 'nvidia',
       comfyuiInstalled: false,
       installedComfyuiPackage: null,
       comfyuiStartTimeoutSecs: 180,
@@ -496,6 +497,42 @@ describe('the engine', { tags: [] }, () => {
       await choose('settings-engine-package', t('settings.engine.package.nvidia'));
       await waitFor(() => expect(set).toHaveBeenCalledWith({ comfyuiPackage: 'nvidia' }));
       expect(screen.queryByTestId('settings-engine-package-confirm')).toBeNull();
+    });
+
+    it('offers auto under the name of the package it stands for on this PC', { tags: ['equivalence'] }, async () => {
+      for (const [auto, label] of [
+        ['amd', t('settings.engine.package.autoAmd')],
+        ['nvidia', t('settings.engine.package.autoNvidia')],
+      ] as const) {
+        vi.spyOn(backend, 'engineSettings').mockResolvedValue(engineFor({ comfyuiPackage: 'auto', autoComfyuiPackage: auto }));
+        cleanup();
+        show();
+        openTab('engine');
+        await waitFor(() => expect(screen.getByTestId('settings-engine-package').textContent).toBe(label));
+      }
+    });
+
+    it('does not ask when auto stands for the package the install came from', { tags: ['condition'] }, async () => {
+      const engine = engineFor({ comfyuiInstalled: true, installedComfyuiPackage: 'amd', comfyuiPackage: 'amd', autoComfyuiPackage: 'amd' });
+      vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
+      const set = echoSave(engine);
+      openTab('engine');
+      await choose('settings-engine-package', t('settings.engine.package.autoAmd'));
+      await waitFor(() => expect(set).toHaveBeenCalledWith({ comfyuiPackage: 'auto' }));
+      expect(screen.queryByTestId('settings-engine-package-confirm')).toBeNull();
+    });
+
+    it('asks first when auto stands for another package than the installed one', { tags: ['condition'] }, async () => {
+      // NVIDIA's package was chosen and installed on a PC whose card is AMD's: auto would reinstall ComfyUI.
+      const engine = engineFor({ comfyuiInstalled: true, installedComfyuiPackage: 'nvidia', comfyuiPackage: 'nvidia', autoComfyuiPackage: 'amd' });
+      vi.spyOn(backend, 'engineSettings').mockResolvedValue(engine);
+      const set = echoSave(engine);
+      openTab('engine');
+      await choose('settings-engine-package', t('settings.engine.package.autoAmd'));
+      expect(await screen.findByText(t('settings.engine.package.reinstall'))).toBeTruthy();
+      expect(set).not.toHaveBeenCalled();
+      fireEvent.click(await screen.findByTestId('settings-engine-package-confirm'));
+      await waitFor(() => expect(set).toHaveBeenCalledWith({ comfyuiPackage: 'auto' }));
     });
 
     it('takes an install of unknown origin to be the saved package, so another package asks first', { tags: ['condition'] }, async () => {

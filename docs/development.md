@@ -12,7 +12,7 @@ Windows PC でソースを動かす手順、ランチャーの使い分け、次
 | Rust（stable、rustup 経由） | `backend/rust-toolchain.toml` が `rustfmt` と `clippy` つきの stable チャンネルを選ぶ |
 | Microsoft C++ Build Tools | Windows で Rust が必要とするリンカー（「C++ によるデスクトップ開発」ワークロード） |
 | WebView2 ランタイム | ウィンドウはこれで UI を表示する。Windows 11 には入っている |
-| GPU（生成するとき） | ComfyUI が使う。アプリは既定で NVIDIA 向けのビルドをインストールし、AMD 向けは設定のエンジンで選べる。モックでの画面作業には要らない |
+| GPU（生成するとき） | ComfyUI が使う。アプリは PC の GPU に合わせて NVIDIA 向けか AMD 向けのビルドをインストールする（設定のエンジンで変えられる）。モックでの画面作業には要らない |
 
 `cargo` は `PATH` に通す。ランチャーは `%USERPROFILE%\.cargo\bin` を自分で追加する。`scripts\dev.bat` は初回に `tauri-cli`（バージョン 2）をインストールし、数分かかる。
 

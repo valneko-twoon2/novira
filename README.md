@@ -10,6 +10,7 @@
   <img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows-0078D6?style=flat-square&logo=windows&logoColor=white">
   <img alt="GPU" src="https://img.shields.io/badge/GPU-NVIDIA-76B900?style=flat-square&logo=nvidia&logoColor=white">
+  <img alt="GPU" src="https://img.shields.io/badge/GPU-AMD-ED1C24?style=flat-square&logo=amd&logoColor=white">
   <img alt="Tauri" src="https://img.shields.io/badge/Tauri-2-24C8DB?style=flat-square&logo=tauri&logoColor=white">
   <img alt="Rust" src="https://img.shields.io/badge/Rust-backend-DEA584?style=flat-square&logo=rust&logoColor=black">
   <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black">
@@ -58,7 +59,7 @@ novira は、プロンプトとモデルから絵を描くアプリです。絵�
 | 項目 | 内容 |
 |---|---|
 | OS | Windows 11 |
-| GPU | NVIDIA 製の GPU が標準です。AMD 製は設定の「エンジン」で切り替えます |
+| GPU | NVIDIA 製か AMD 製の GPU。アプリが PC の GPU に合うエンジンを選んでインストールします。AMD 製は、ComfyUI の AMD 用が対応する Radeon（RX 6000 シリーズ以降など）で、新しいドライバーが要ります |
 | 空き容量 | ComfyUI と Python のほかに、モデルを置く場所が要ります。モデルは 1 つで数 GB あります |
 | インターネット | 初回の起動時に、ComfyUI と Python をダウンロードします。モデルのダウンロードにも使います |
 

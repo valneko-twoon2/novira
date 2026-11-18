@@ -1,5 +1,5 @@
 //! Backend settings, read from `<data dir>/settings.json` (optional, never committed). Missing keys use the defaults.
-use crate::types::{ComfyuiMode, ComfyuiPackage};
+use crate::types::{ComfyuiMode, ComfyuiPackageChoice};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
@@ -16,7 +16,8 @@ pub struct Settings {
     /// Use an existing local ComfyUI folder (the one holding `main.py`) instead of downloading one.
     /// novira starts it and stops it again on exit (on a free port of this PC, or at `comfyuiUrl` when that is set).
     pub comfyui_dir: Option<PathBuf>,
-    /// Which ComfyUI portable package to download: `nvidia` (default) or `amd`.
+    /// Which ComfyUI portable package to download: `auto` (default: the one for this PC's graphics cards,
+    /// `hardware::auto_package`), `nvidia` or `amd`.
     pub comfyui_package: String,
     /// Where novira's own ComfyUI is installed (owned mode); unset for `comfyui` in the data folder. Read at start.
     pub comfyui_install_dir: Option<PathBuf>,
@@ -45,7 +46,7 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             comfyui_url: None,
-            comfyui_package: "nvidia".into(),
+            comfyui_package: "auto".into(),
             comfyui_dir: None,
             comfyui_install_dir: None,
             comfyui_python: None,
@@ -111,13 +112,10 @@ impl Settings {
             .unwrap_or_else(|| data_dir.join("comfyui"))
     }
 
-    /// The package as the wire shows it. A value the app does not know (only possible by editing the file) shows as
-    /// the default, which is also what a check of the value would accept.
-    pub fn package(&self) -> ComfyuiPackage {
-        match self.comfyui_package.as_str() {
-            "amd" => ComfyuiPackage::Amd,
-            _ => ComfyuiPackage::Nvidia,
-        }
+    /// The package choice as the wire shows it. A value the app does not know (only possible by editing the file)
+    /// counts as the default, `auto`.
+    pub fn package(&self) -> ComfyuiPackageChoice {
+        ComfyuiPackageChoice::from_name(&self.comfyui_package).unwrap_or(ComfyuiPackageChoice::Auto)
     }
 
     /// The GPU lock directory, or `None` when locking is disabled.
@@ -137,12 +135,11 @@ pub const START_TIMEOUT_SECS: std::ops::RangeInclusive<u64> = 30..=1800;
 /// The most extra model folders (`modelRoots`); each one is scanned at every start.
 pub const MAX_MODEL_ROOTS: usize = 16;
 
-/// `comfyuiPackage` must name a package the installer knows.
+/// `comfyuiPackage` must name a package the installer knows, or `auto`.
 pub fn check_package(package: &str) -> Result<(), String> {
-    match package {
-        "nvidia" | "amd" => Ok(()),
-        _ => Err("The ComfyUI package must be \"nvidia\" or \"amd\"".into()),
-    }
+    ComfyuiPackageChoice::from_name(package)
+        .map(|_| ())
+        .ok_or_else(|| "The ComfyUI package must be \"auto\", \"nvidia\" or \"amd\"".into())
 }
 
 /// `comfyuiStartTimeoutSecs` must be a whole number of seconds within `START_TIMEOUT_SECS`.
@@ -328,7 +325,7 @@ mod tests {
         .unwrap();
         let s = Settings::load(dir.path()).unwrap();
         assert_eq!(s.comfyui_url.as_deref(), Some("http://127.0.0.1:9000"));
-        assert_eq!(s.comfyui_package, "nvidia");
+        assert_eq!(s.comfyui_package, "auto");
         assert_eq!(s.gpu_lock_path(), None);
         assert_eq!(s.comfyui_start_timeout_secs, 180);
     }
@@ -391,22 +388,59 @@ mod tests {
     #[test]
     fn an_unknown_saved_package_shows_as_the_default() {
         let mut s = Settings::default();
-        assert_eq!(s.package(), ComfyuiPackage::Nvidia);
+        assert_eq!(s.package(), ComfyuiPackageChoice::Auto);
+        s.comfyui_package = "nvidia".into();
+        assert_eq!(s.package(), ComfyuiPackageChoice::Nvidia);
         s.comfyui_package = "amd".into();
-        assert_eq!(s.package(), ComfyuiPackage::Amd);
+        assert_eq!(s.package(), ComfyuiPackageChoice::Amd);
         s.comfyui_package = "intel".into();
-        assert_eq!(s.package(), ComfyuiPackage::Nvidia);
+        assert_eq!(s.package(), ComfyuiPackageChoice::Auto);
+    }
+
+    // tags: decision-table
+    #[test]
+    fn a_choice_installs_its_package_and_auto_the_one_for_the_cards() {
+        use crate::types::ComfyuiPackage::{Amd, Nvidia};
+        use ComfyuiPackageChoice as C;
+        // (choice, what auto stands for on the PC, the package installed, the package of an install with no record)
+        for (choice, auto, installs, unrecorded) in [
+            (C::Auto, Nvidia, Nvidia, Nvidia),
+            (C::Auto, Amd, Amd, Nvidia),
+            (C::Nvidia, Nvidia, Nvidia, Nvidia),
+            (C::Nvidia, Amd, Nvidia, Nvidia),
+            (C::Amd, Nvidia, Amd, Amd),
+            (C::Amd, Amd, Amd, Amd),
+        ] {
+            assert_eq!(choice.resolve(auto), installs, "{choice:?} on {auto:?}");
+            assert_eq!(choice.unrecorded(), unrecorded, "{choice:?}");
+        }
+    }
+
+    // tags: equivalence, error-guessing
+    #[test]
+    fn a_package_name_reads_back_as_the_same_package() {
+        use crate::types::ComfyuiPackage;
+        for p in [ComfyuiPackage::Nvidia, ComfyuiPackage::Amd] {
+            assert_eq!(ComfyuiPackage::from_name(p.name()), Some(p));
+            assert!(check_package(p.name()).is_ok());
+        }
+        for bad in ["auto", "", "AMD", "amd "] {
+            assert_eq!(ComfyuiPackage::from_name(bad), None, "{bad:?}");
+        }
     }
 
     // tags: equivalence, error-guessing
     #[test]
     fn only_the_known_packages_are_accepted() {
+        assert!(check_package("auto").is_ok());
         assert!(check_package("nvidia").is_ok());
         assert!(check_package("amd").is_ok());
         for bad in [
             "",
             "NVIDIA",
             "Amd",
+            "Auto",
+            "auto ",
             "cpu",
             "nvidia ",
             "../nvidia",

@@ -259,7 +259,7 @@
   "settings.engine.comfyui.ownedHelp": "アプリがインストールした ComfyUI を、アプリが起動します。インストール先を変えると、次の起動から新しい場所にインストールします。古い場所のファイルは消えません。",
   "settings.engine.comfyui.otherHelp": "設定ファイルで指定された ComfyUI を使っています。ここでは変えられません。",
   "settings.engine.package.label": "ComfyUI のパッケージ",
-  "settings.engine.package.help": "次に ComfyUI をダウンロードするとき（初めてのインストールや版の切り替え）、またはインストール済みの ComfyUI を別のパッケージに変えるときに使う種類です。",
+  "settings.engine.package.help": "次に ComfyUI をダウンロードするとき（初めてのインストールや版の切り替え）、またはインストール済みの ComfyUI を別のパッケージに変えるときに使う種類です。自動では、この PC の GPU に合わせて選びます。",
   "settings.engine.package.nvidia": "NVIDIA の GPU 向け",
   "settings.engine.package.amd": "AMD の GPU 向け",
   "settings.engine.timeout.label": "起動を待つ秒数",
@@ -329,5 +329,7 @@
   "settings.section.models": "モデル",
   "settings.assistantTrial.label": "エージェントの試し描き",
   "settings.assistantTrial.help": "依頼の意図が分かりにくいとき、エージェントが自分で 1 枚だけ試しに生成し、その画像を見て「こんな感じですか？」と確かめてよいかどうか。生成の時間がかかります。画像を見るときは「画像とプロンプトの読み取り」の設定に従います。",
-  "settings.tab.text": "テキスト"
+  "settings.tab.text": "テキスト",
+  "settings.engine.package.autoNvidia": "自動（NVIDIA の GPU 向け）",
+  "settings.engine.package.autoAmd": "自動（AMD の GPU 向け）"
 }
